@@ -24,7 +24,7 @@ clean:
 
 # Install air for hot reload
 install-air:
-	go install github.com/cosmtrek/air@latest
+	go install github.com/air-verse/air@latest
 
 # Show help
 help:
