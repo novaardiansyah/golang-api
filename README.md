@@ -47,6 +47,13 @@ To get started locally:
 3. Run `go mod tidy` to install dependencies.
 4. Run `go run cmd/api/main.go` to start the server.
 
+## API Status 🌐
+
+You can check the API status by visiting the health check endpoint:
+- [https://golang-api.novadev.my.id/api/health](https://golang-api.novadev.my.id/api/health)
+
+> **Note**: Other endpoints require special access rights and authentication.
+
 ## Let's Connect! 📞
 
 Need to chat? Feel free to drop me a line via [Email](mailto:novaardiansyah78@gmail.com) or hit me up on [WhatsApp](https://wa.me/6289506668480?text=Hi%20Nova,%20I%20have%20a%20question%20about%20your%20project%20on%20GitHub:%20https://github.com/novaardiansyah/golang-api). I'm just a message away, ready to groove with you! 📩
