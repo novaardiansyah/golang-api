@@ -32,7 +32,7 @@ _env
 .agent/*
 .antigravity/*
 tmp/*
-bin/*
+deploy/bin/*
 
 # OS
 .DS_Store

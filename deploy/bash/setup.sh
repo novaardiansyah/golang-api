@@ -5,10 +5,10 @@ rm -rf logs/golang.log logs/golang-error.log
 touch logs/golang.log logs/golang-error.log
 
 echo "--> Binary File..."
-sudo chmod +x bin/api
+sudo chmod +x deploy/bin/api
 
 echo "--> Supervisor setup..."
-cp ./docker/supervisor/app.conf /etc/supervisor/conf.d/golang-api_novadev_myid.conf
+cp ./deploy/supervisor/app.conf /etc/supervisor/conf.d/golang-api_novadev_myid.conf
 
 sudo supervisorctl reread
 sudo supervisorctl update
@@ -30,4 +30,4 @@ sudo chmod -R 775 logs 2>/dev/null
 
 # Sensitive files
 sudo chmod 600 .env .env.local .env.production .well-known .git 2>/dev/null
-sudo chmod -R 600 ./docker/bash 2>/dev/null
+sudo chmod -R 600 ./deploy/bash 2>/dev/null
