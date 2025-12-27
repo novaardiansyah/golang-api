@@ -29,7 +29,7 @@ This project follows a clean directory structure to maintain a clear separation 
 
 ## Key Features 🚀
 
-- ✅ **RESTful API**: Standardized CRUD operations for Users and Products.
+- ✅ **RESTful API**: Standardized operations for all models or resources.
 - ✅ **Repository Pattern**: Clean data access layer separation.
 - ✅ **Soft Deletes**: Native support via GORM for data safety.
 - ✅ **Pagination**: Efficient data fetching for large datasets.
