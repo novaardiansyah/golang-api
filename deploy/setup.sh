@@ -8,7 +8,7 @@ echo "--> Binary File..."
 sudo chmod +x deploy/bin/api
 
 echo "--> Supervisor setup..."
-cp ./deploy/supervisor/app.conf /etc/supervisor/conf.d/golang-api_novadev_myid.conf
+cp ./deploy/supervisor.conf /etc/supervisor/conf.d/golang-api_novadev_myid.conf
 
 sudo supervisorctl reread
 sudo supervisorctl update
