@@ -32,7 +32,10 @@ _env
 .agent/*
 .antigravity/*
 tmp/*
+bin/*
 
 # OS
 .DS_Store
 Thumbs.db
+logs/golang-error.log
+logs/golang.log
