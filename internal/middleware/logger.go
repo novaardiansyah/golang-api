@@ -1,13 +1,19 @@
 package middleware
 
 import (
+	"fmt"
+	"golang-api/pkg/utils"
+	"time"
+
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
 func Logger() fiber.Handler {
-	return logger.New(logger.Config{
-		Format:     "[${time}] ${status} | ${method} ${path} | ${latency}\n",
-		TimeFormat: "2006-01-02 15:04:05",
-	})
+	return func(c *fiber.Ctx) error {
+		start := time.Now()
+		err := c.Next()
+		elapsed := time.Since(start)
+		fmt.Printf("[%s] [%s] [sts:%d] %s %s\n", time.Now().Format("2006-01-02 15:04:05"), utils.FormatDuration(elapsed), c.Response().StatusCode(), c.Method(), c.Path())
+		return err
+	}
 }

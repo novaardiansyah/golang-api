@@ -1,7 +1,9 @@
 package config
 
 import (
+	"context"
 	"fmt"
+	"golang-api/pkg/utils"
 	"log"
 	"os"
 	"time"
@@ -12,6 +14,16 @@ import (
 )
 
 var DB *gorm.DB
+
+type CustomLogger struct {
+	logger.Interface
+}
+
+func (l *CustomLogger) Trace(ctx context.Context, begin time.Time, fc func() (sql string, rowsAffected int64), err error) {
+	elapsed := time.Since(begin)
+	sql, rows := fc()
+	fmt.Printf("[%s] [%s] [rows:%d] %s\n", time.Now().Format("2006-01-02 15:04:05"), utils.FormatDuration(elapsed), rows, sql)
+}
 
 func ConnectDatabase() {
 	var err error
@@ -24,8 +36,19 @@ func ConnectDatabase() {
 		os.Getenv("DB_DATABASE"),
 	)
 
+	var gormLogger logger.Interface
+	appEnv := os.Getenv("APP_ENV")
+
+	if appEnv == "production" {
+		gormLogger = logger.Default.LogMode(logger.Silent)
+	} else {
+		gormLogger = &CustomLogger{
+			Interface: logger.Default.LogMode(logger.Silent),
+		}
+	}
+
 	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
+		Logger: gormLogger,
 	})
 
 	if err != nil {
