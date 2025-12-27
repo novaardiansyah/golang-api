@@ -12,7 +12,6 @@ func SetupRoutes(app *fiber.App) {
 	db := config.GetDB()
 
 	userRepo := repositories.NewUserRepository(db)
-
 	userController := controllers.NewUserController(userRepo)
 
 	api := app.Group("/api")
@@ -27,4 +26,10 @@ func SetupRoutes(app *fiber.App) {
 	users := api.Group("/users")
 	users.Get("/", userController.Index)
 	users.Get("/:id", userController.Show)
+
+  galleryRepo := repositories.NewGalleryRepository(db)
+  galleryController := controllers.NewGalleryController(galleryRepo)
+
+  galleries := api.Group("/galleries")
+  galleries.Get("/", galleryController.Index)
 }

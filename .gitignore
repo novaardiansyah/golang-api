@@ -31,6 +31,7 @@ _env
 *~
 .agent/*
 .antigravity/*
+tmp/*
 
 # OS
 .DS_Store
