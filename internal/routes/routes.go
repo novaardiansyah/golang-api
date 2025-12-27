@@ -3,6 +3,7 @@ package routes
 import (
 	"golang-api/internal/config"
 	"golang-api/internal/controllers"
+	"golang-api/internal/middleware"
 	"golang-api/internal/repositories"
 
 	"github.com/gofiber/fiber/v2"
@@ -27,15 +28,15 @@ func SetupRoutes(app *fiber.App) {
 	users.Get("/", userController.Index)
 	users.Get("/:id", userController.Show)
 
-  galleryRepo := repositories.NewGalleryRepository(db)
-  galleryController := controllers.NewGalleryController(galleryRepo)
+	galleryRepo := repositories.NewGalleryRepository(db)
+	galleryController := controllers.NewGalleryController(galleryRepo)
 
-  galleries := api.Group("/galleries")
-  galleries.Get("/", galleryController.Index)
+	galleries := api.Group("/galleries")
+	galleries.Get("/", galleryController.Index)
 
-  paymentRepo := repositories.NewPaymentRepository(db)
-  paymentController := controllers.NewPaymentController(paymentRepo)
+	paymentRepo := repositories.NewPaymentRepository(db)
+	paymentController := controllers.NewPaymentController(paymentRepo)
 
-  payments := api.Group("/payments")
-  payments.Get("/", paymentController.Index)
+	payments := api.Group("/payments", middleware.Auth())
+	payments.Get("/", paymentController.Index)
 }
