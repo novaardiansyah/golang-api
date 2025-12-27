@@ -30,6 +30,7 @@ _env
 *.swo
 *~
 .agent/*
+.antigravity/*
 
 # OS
 .DS_Store
