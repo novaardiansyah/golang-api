@@ -1,33 +1,24 @@
 #!/bin/bash
+set -e
 
-echo "--> Fix permission..."
-
-# Set owner
-sudo chown -R www:www . 2>/dev/null
-
-# Default perms
-sudo find . -type d -exec chmod 755 {} \; 2>/dev/null
-sudo find . -type f -exec chmod 644 {} \; 2>/dev/null
-
-# Sensitive files
-sudo chmod 600 .env .env.local .env.production .well-known .git 2>/dev/null
-sudo chmod -R 600 ./deploy/bash 2>/dev/null
-
-echo "--> Creating log files..."
-rm -rf logs/golang.log logs/golang-error.log
+echo "--> Preparing logs..."
 mkdir -p logs
 touch logs/golang.log logs/golang-error.log
+sudo chown -R www:www logs
+sudo chmod -R 775 logs
 
-sudo chmod -R 775 logs 2>/dev/null
+echo "--> Securing env files..."
+sudo chmod 600 .env .env.local .env.production 2>/dev/null || true
 
-echo "--> Binary File..."
-sudo chmod +x deploy/bin/api
+echo "--> Binary permission..."
+sudo chown www:www deploy/bin/api
+sudo chmod 755 deploy/bin/api
 
 echo "--> Supervisor setup..."
-cp ./deploy/supervisor.conf /etc/supervisor/conf.d/golang-api_novadev_myid.conf
+sudo cp ./deploy/supervisor.conf /etc/supervisor/conf.d/golang-api_novadev_myid.conf
 
 sudo supervisorctl reread
 sudo supervisorctl update
-
-echo "--> Supervisor restart..."
 sudo supervisorctl restart golang-api_novadev_myid
+
+echo "--> Done."
