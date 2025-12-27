@@ -1,0 +1,175 @@
+### Health Check
+GET http://localhost:8080/api/health
+
+###
+
+### Get All Users
+GET http://localhost:8080/api/users
+
+###
+
+### Get User by ID
+GET http://localhost:8080/api/users/1
+
+###
+
+### Create User
+POST http://localhost:8080/api/users
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "password123"
+}
+
+###
+
+### Update User
+PUT http://localhost:8080/api/users/1
+Content-Type: application/json
+
+{
+  "name": "John Doe Updated",
+  "email": "john.updated@example.com"
+}
+
+###
+
+### Delete User
+DELETE http://localhost:8080/api/users/1
+
+###
+
+### Get All Products (with pagination)
+GET http://localhost:8080/api/products?page=1&limit=10
+
+###
+
+### Get Product by ID
+GET http://localhost:8080/api/products/1
+
+###
+
+### Create Product
+POST http://localhost:8080/api/products
+Content-Type: application/json
+
+{
+  "name": "Laptop Gaming",
+  "description": "Laptop gaming dengan spesifikasi tinggi",
+  "price": 15000000,
+  "stock": 10
+}
+
+###
+
+### Update Product
+PUT http://localhost:8080/api/products/1
+Content-Type: application/json
+
+{
+  "name": "Laptop Gaming Updated",
+  "description": "Laptop gaming dengan spesifikasi sangat tinggi",
+  "price": 18000000,
+  "stock": 5
+}
+
+###
+
+### Delete Product
+DELETE http://localhost:8080/api/products/1
+
+###
+
+### Create Multiple Users
+POST http://localhost:8080/api/users
+Content-Type: application/json
+
+{
+  "name": "Jane Smith",
+  "email": "jane@example.com",
+  "password": "password123"
+}
+
+###
+
+POST http://localhost:8080/api/users
+Content-Type: application/json
+
+{
+  "name": "Bob Johnson",
+  "email": "bob@example.com",
+  "password": "password123"
+}
+
+###
+
+### Create Multiple Products
+POST http://localhost:8080/api/products
+Content-Type: application/json
+
+{
+  "name": "Mouse Gaming",
+  "description": "Mouse gaming RGB dengan DPI tinggi",
+  "price": 500000,
+  "stock": 50
+}
+
+###
+
+POST http://localhost:8080/api/products
+Content-Type: application/json
+
+{
+  "name": "Keyboard Mechanical",
+  "description": "Keyboard mechanical dengan switch blue",
+  "price": 1200000,
+  "stock": 30
+}
+
+###
+
+### Test Validation - Invalid Email
+POST http://localhost:8080/api/users
+Content-Type: application/json
+
+{
+  "name": "Test User",
+  "email": "invalid-email",
+  "password": "password123"
+}
+
+###
+
+### Test Validation - Short Password
+POST http://localhost:8080/api/users
+Content-Type: application/json
+
+{
+  "name": "Test User",
+  "email": "test@example.com",
+  "password": "123"
+}
+
+###
+
+### Test Validation - Missing Required Fields
+POST http://localhost:8080/api/users
+Content-Type: application/json
+
+{
+  "name": "Test User"
+}
+
+###
+
+### Test Pagination - Page 2
+GET http://localhost:8080/api/products?page=2&limit=5
+
+###
+
+### Test Pagination - Different Limit
+GET http://localhost:8080/api/products?page=1&limit=20
+
+###
