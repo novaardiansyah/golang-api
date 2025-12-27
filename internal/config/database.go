@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -12,11 +13,9 @@ import (
 
 var DB *gorm.DB
 
-// ConnectDatabase establishes connection to MySQL database
 func ConnectDatabase() {
 	var err error
 
-	// Build DSN (Data Source Name) - mirip dengan Laravel database config
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		os.Getenv("DB_USERNAME"),
 		os.Getenv("DB_PASSWORD"),
@@ -25,7 +24,6 @@ func ConnectDatabase() {
 		os.Getenv("DB_DATABASE"),
 	)
 
-	// Connect to database using GORM (ORM mirip Eloquent)
 	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
 	})
@@ -34,10 +32,18 @@ func ConnectDatabase() {
 		log.Fatal("Failed to connect to database:", err)
 	}
 
+	sqlDB, err := DB.DB()
+	if err != nil {
+		log.Fatal("Failed to get database instance:", err)
+	}
+
+	sqlDB.SetMaxIdleConns(10)
+	sqlDB.SetMaxOpenConns(100)
+	sqlDB.SetConnMaxLifetime(time.Hour)
+
 	log.Println("Database connected successfully!")
 }
 
-// GetDB returns database instance
 func GetDB() *gorm.DB {
 	return DB
 }
