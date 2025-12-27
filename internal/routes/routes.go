@@ -32,4 +32,10 @@ func SetupRoutes(app *fiber.App) {
 
   galleries := api.Group("/galleries")
   galleries.Get("/", galleryController.Index)
+
+  paymentRepo := repositories.NewPaymentRepository(db)
+  paymentController := controllers.NewPaymentController(paymentRepo)
+
+  payments := api.Group("/payments")
+  payments.Get("/", paymentController.Index)
 }
