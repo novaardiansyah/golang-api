@@ -24,14 +24,14 @@ func SetupRoutes(app *fiber.App) {
 		})
 	})
 
-	users := api.Group("/users")
+	users := api.Group("/users", middleware.Auth())
 	users.Get("/", userController.Index)
 	users.Get("/:id", userController.Show)
 
 	galleryRepo := repositories.NewGalleryRepository(db)
 	galleryController := controllers.NewGalleryController(galleryRepo)
 
-	galleries := api.Group("/galleries")
+	galleries := api.Group("/galleries", middleware.Auth())
 	galleries.Get("/", galleryController.Index)
 
 	paymentRepo := repositories.NewPaymentRepository(db)
