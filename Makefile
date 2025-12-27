@@ -10,7 +10,7 @@ build:
 
 # Build for Linux (production)
 build-linux:
-	set GOOS=linux&& set GOARCH=amd64&& go build -ldflags="-s -w" -o bin/api ./cmd/api
+	powershell -Command "$$env:GOOS='linux'; $$env:GOARCH='amd64'; go build -ldflags='-s -w' -o bin/api ./cmd/api"
 
 # Run with hot reload (requires air)
 dev:
