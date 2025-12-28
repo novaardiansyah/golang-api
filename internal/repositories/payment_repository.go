@@ -27,10 +27,10 @@ func (r *PaymentRepository) FindAllPaginated(page, limit int, filter PaymentFilt
 	offset := (page - 1) * limit
 
 	query := r.db.
-		Select("payments.*, LOWER(payment_types.name) as type, (SELECT COUNT(*) FROM payment_item WHERE payment_item.payment_id = payments.id) as items_count, pa.id as account_id, pa.name as account_name, pa_to.id as account_to_id, pa_to.name as account_to_name").
-		Joins("INNER JOIN payment_types ON payment_types.id = payments.type_id").
-		Joins("INNER JOIN payment_accounts pa ON pa.id = payments.payment_account_id").
-		Joins("LEFT JOIN payment_accounts pa_to ON pa_to.id = payments.payment_account_to_id")
+		Select("payments.*, (SELECT COUNT(*) FROM payment_item WHERE payment_item.payment_id = payments.id) as items_count").
+		Preload("PaymentType").
+		Preload("PaymentAccount").
+		Preload("PaymentAccountTo")
 
 	if filter.DateFrom != "" {
 		query = query.Where("payments.date >= ?", filter.DateFrom)
@@ -83,4 +83,16 @@ func (r *PaymentRepository) Count(filter PaymentFilter) (int64, error) {
 
 	err := query.Count(&count).Error
 	return count, err
+}
+
+func (r *PaymentRepository) FindByID(id int) (*models.Payment, error) {
+	var payment models.Payment
+
+	err := r.db.
+		Preload("PaymentType").
+		Preload("PaymentAccount").
+		Preload("PaymentAccountTo").
+		First(&payment, id).Error
+
+	return &payment, err
 }

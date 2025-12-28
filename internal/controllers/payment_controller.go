@@ -52,3 +52,17 @@ func (ctrl *PaymentController) Index(c *fiber.Ctx) error {
 
 	return utils.PaginatedSuccessResponse(c, "Payments retrieved successfully", payments, page, perPage, total, len(payments))
 }
+
+func (ctrl *PaymentController) Show(c *fiber.Ctx) error {
+	paymentID, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Invalid payment ID")
+	}
+
+	payment, err := ctrl.repo.FindByID(paymentID)
+	if err != nil {
+		return utils.ErrorResponse(c, fiber.StatusNotFound, "Payment not found")
+	}
+
+	return utils.SuccessResponse(c, "Payment retrieved successfully", payment)
+}

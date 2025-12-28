@@ -39,4 +39,5 @@ func SetupRoutes(app *fiber.App) {
 
 	payments := api.Group("/payments", middleware.Auth())
 	payments.Get("/", paymentController.Index)
+  payments.Get("/:id", paymentController.Show)
 }
