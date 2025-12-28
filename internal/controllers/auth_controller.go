@@ -41,7 +41,7 @@ func (ctrl *AuthController) Login(c *fiber.Ctx) error {
 		"password": []string{"required", "min:6"},
 	}
 
-	errs := utils.ValidateJSONStruct(c, &req, rules)
+	errs := utils.ValidateJSON(c, &req, rules)
 	if errs != nil {
 		return utils.ValidationError(c, errs)
 	}

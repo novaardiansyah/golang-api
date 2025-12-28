@@ -7,6 +7,7 @@ import (
 	"regexp"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/thedevsaddam/govalidator"
 )
 
 type NotificationController struct{}
@@ -16,21 +17,25 @@ func NewNotificationController() *NotificationController {
 }
 
 func (ctrl *NotificationController) UpdateSettings(c *fiber.Ctx) error {
-	rules := map[string]utils.FieldRule{
-		"has_allow_notification": {Type: "bool"},
-		"notification_token":     {Type: "string", Max: 255},
+	data := make(map[string]interface{})
+
+	rules := govalidator.MapData{
+		"has_allow_notification": []string{"numeric_between:0,1"},
+		"notification_token":     []string{"max:255"},
 	}
 
-	data, errs := utils.ValidateJSONMap(c, rules)
+	errs := utils.ValidateJSON(c, &data, rules)
 	if errs != nil {
 		return utils.ValidationError(c, errs)
 	}
 
-	hasAllowNotification := utils.GetBool(data, "has_allow_notification")
-	notificationToken := utils.GetString(data, "notification_token")
+	notificationToken := ""
+	if val, ok := data["notification_token"].(string); ok {
+		notificationToken = val
+	}
 
-	if notificationToken != nil && *notificationToken != "" {
-		if !validateExpoToken(*notificationToken) {
+	if notificationToken != "" {
+		if !validateExpoToken(notificationToken) {
 			return utils.ErrorResponse(c, fiber.StatusBadRequest, "Invalid Expo push token format")
 		}
 	}
@@ -39,11 +44,13 @@ func (ctrl *NotificationController) UpdateSettings(c *fiber.Ctx) error {
 	db := config.GetDB()
 
 	updates := make(map[string]interface{})
-	if hasAllowNotification != nil {
-		updates["has_allow_notification"] = *hasAllowNotification
+
+	if val, ok := data["has_allow_notification"]; ok {
+		updates["has_allow_notification"] = val
 	}
-	if notificationToken != nil {
-		updates["notification_token"] = *notificationToken
+
+	if notificationToken != "" {
+		updates["notification_token"] = notificationToken
 	}
 
 	if len(updates) > 0 {
