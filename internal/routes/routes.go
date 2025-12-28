@@ -28,19 +28,12 @@ func SetupRoutes(app *fiber.App) {
 
 	api.Get("/test-email", func(c *fiber.Ctx) error {
 		to := c.Query("to", "admin@novadev.my.id")
-		data := utils.GetDefaultMailData(config.MailFromName, "Welcome to Golang API", "This is a test email sent from the new Golang implementation.")
 
-		smtpConf := utils.SMTPConfig{
-			Host:        config.MailHost,
-			Port:        config.MailPort,
-			Username:    config.MailUsername,
-			Password:    config.MailPassword,
-			FromAddress: config.MailFromAddress,
-			FromName:    config.MailFromName,
-		}
+		err := utils.SendEmail(to, "Testing Golang Email", map[string]any{
+			"Name":    "User Testing",
+			"Message": "This is a dynamic message from the route!",
+		}, "internal/resources/views/emails/main.html", "internal/resources/views/emails/test_content.html")
 
-		err := utils.SendEmail(smtpConf, to, "Testing Golang Email", "resources/views/emails/welcome.html", data)
-    
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{
 				"success": false,

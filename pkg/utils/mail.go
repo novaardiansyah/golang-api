@@ -5,30 +5,31 @@ import (
 	"fmt"
 	"html/template"
 	"net/smtp"
+	"os"
+	"strconv"
 	"time"
 )
 
-type MailData struct {
-	Title           string
-	Header          string
-	Content         string
-	AuthorName      string
-	AuthorFirstName string
-	Year            int
-}
+func SendEmail(to string, subject string, data map[string]any, templateFiles ...string) error {
+	host := os.Getenv("MAIL_HOST")
+	port, _ := strconv.Atoi(os.Getenv("MAIL_PORT"))
+	username := os.Getenv("MAIL_USERNAME")
+	password := os.Getenv("MAIL_PASSWORD")
+	fromAddress := os.Getenv("MAIL_FROM_ADDRESS")
+	fromName := os.Getenv("MAIL_FROM_NAME")
 
-type SMTPConfig struct {
-	Host        string
-	Port        int
-	Username    string
-	Password    string
-	FromAddress string
-	FromName    string
-}
+	if data == nil {
+		data = make(map[string]any)
+	}
 
-func SendEmail(conf SMTPConfig, to string, subject string, templatePath string, data interface{}) error {
+	// Auto-inject default mail data
+	data["Title"] = subject
+	data["AuthorName"] = "Nova Ardiansyah"
+	data["AuthorFirstName"] = "Nova"
+	data["Year"] = time.Now().Year()
+
 	var body bytes.Buffer
-	t, err := template.ParseFiles(templatePath)
+	t, err := template.ParseFiles(templateFiles...)
 	if err != nil {
 		return err
 	}
@@ -37,12 +38,11 @@ func SendEmail(conf SMTPConfig, to string, subject string, templatePath string, 
 		return err
 	}
 
-	auth := smtp.PlainAuth("", conf.Username, conf.Password, conf.Host)
-
-	addr := fmt.Sprintf("%s:%d", conf.Host, conf.Port)
+	auth := smtp.PlainAuth("", username, password, host)
+	addr := fmt.Sprintf("%s:%d", host, port)
 
 	header := make(map[string]string)
-	header["From"] = fmt.Sprintf("%s <%s>", conf.FromName, conf.FromAddress)
+	header["From"] = fmt.Sprintf("%s <%s>", fromName, fromAddress)
 	header["To"] = to
 	header["Subject"] = subject
 	header["MIME-Version"] = "1.0"
@@ -54,16 +54,5 @@ func SendEmail(conf SMTPConfig, to string, subject string, templatePath string, 
 	}
 	message += "\r\n" + body.String()
 
-	return smtp.SendMail(addr, auth, conf.FromAddress, []string{to}, []byte(message))
-}
-
-func GetDefaultMailData(authorName, header, content string) MailData {
-	return MailData{
-		Title:           header,
-		Header:          header,
-		Content:         content,
-		AuthorName:      authorName,
-		AuthorFirstName: "Nova",
-		Year:            time.Now().Year(),
-	}
+	return smtp.SendMail(addr, auth, fromAddress, []string{to}, []byte(message))
 }

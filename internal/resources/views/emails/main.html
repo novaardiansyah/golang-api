@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="UTF-8" />
   <style>
@@ -9,6 +10,7 @@
       margin: 0;
       padding: 0;
     }
+
     .container {
       max-width: 600px;
       margin: auto;
@@ -16,9 +18,11 @@
       border: 1px solid #e0e0e0;
       background-color: #ffffff;
     }
+
     .text-primary {
       color: #3366FF;
     }
+
     .header {
       text-align: center;
       color: #3366FF;
@@ -26,12 +30,15 @@
       font-weight: bold;
       margin-bottom: 20px;
     }
+
     .content {
       font-size: 16px;
       color: #333333;
       line-height: 1.6;
     }
-    .footer, .footer a {
+
+    .footer,
+    .footer a {
       text-align: center;
       font-size: 13px;
       color: #999;
@@ -41,13 +48,11 @@
   </style>
   <title>{{ .Title }}</title>
 </head>
+
 <body>
   <div class="container">
-    <div class="header">
-      {{ .Header }}
-    </div>
     <div class="content">
-      {{ .Content }}
+      {{ template "content" . }}
 
       <p style="margin-bottom: 26px">Terima kasih atas perhatian Anda.</p>
 
@@ -60,4 +65,5 @@
     </div>
   </div>
 </body>
+
 </html>
