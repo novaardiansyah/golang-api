@@ -26,4 +26,4 @@ sudo supervisorctl update
 sudo supervisorctl restart golang-api_novadev_myid
 
 echo "--> Securing env files..."
-sudo chmod 600 .env .env.local .env.production artisan .well-known .git deploy/setup.sh 2>/dev/null
+sudo chmod 600 .env .env.local .env.production artisan .well-known .git Makefile deploy/setup.sh 2>/dev/null
