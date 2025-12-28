@@ -24,34 +24,29 @@ func NewAuthController(userRepo repositories.UserRepository) *AuthController {
 	return &AuthController{userRepo: userRepo}
 }
 
-type LoginRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
 type LoginResponse struct {
 	Token string `json:"token"`
 }
 
 func (ctrl *AuthController) Login(c *fiber.Ctx) error {
-	var req LoginRequest
+	data := make(map[string]interface{})
 
 	rules := govalidator.MapData{
 		"email":    []string{"required", "email"},
 		"password": []string{"required", "min:6"},
 	}
 
-	errs := utils.ValidateJSON(c, &req, rules)
+	errs := utils.ValidateJSON(c, &data, rules)
 	if errs != nil {
 		return utils.ValidationError(c, errs)
 	}
 
-	user, err := ctrl.userRepo.FindByEmail(req.Email)
+	user, err := ctrl.userRepo.FindByEmail(data["email"].(string))
 	if err != nil {
 		return utils.ErrorResponse(c, fiber.StatusUnauthorized, "Invalid credentials")
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password))
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(data["password"].(string)))
 	if err != nil {
 		return utils.ErrorResponse(c, fiber.StatusUnauthorized, "Invalid credentials")
 	}
