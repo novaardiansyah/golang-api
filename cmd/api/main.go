@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"golang-api/internal/config"
 	"golang-api/internal/middleware"
 	"golang-api/internal/routes"
@@ -42,6 +41,12 @@ func main() {
 		port = "8080"
 	}
 
-	log.Printf("Server starting on port %s...\n", port)
-	log.Fatal(app.Listen(fmt.Sprintf(":%s", port)))
+	addr := ":" + port
+  
+	if os.Getenv("APP_ENV") == "production" {
+		addr = "127.0.0.1:" + port
+	}
+
+	log.Printf("Server starting on %s...\n", addr)
+	log.Fatal(app.Listen(addr))
 }
