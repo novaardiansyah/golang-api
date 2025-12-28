@@ -1,11 +1,14 @@
 #!/bin/bash
 set -e
 
-echo "--> Preparing logs..."
+echo "--> Preparing directories..."
 mkdir -p logs
 touch logs/golang.log logs/golang-error.log
-sudo chown -R www:www logs
+sudo chown -R www:www logs deploy/resources
 sudo chmod -R 775 logs
+
+sudo find deploy/resources -type f -exec chmod 644 {} +
+sudo find deploy/resources -type d -exec chmod 755 {} +
 
 echo "--> Securing env files..."
 sudo chmod 600 .env .env.local .env.production 2>/dev/null || true
