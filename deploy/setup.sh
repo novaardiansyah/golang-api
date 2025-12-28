@@ -5,12 +5,13 @@ set -e
 # sed -i 's/\r$//' deploy/setup.sh && bash deploy/setup.sh
 
 echo "--> Setting default permissions..."
-sudo chown -R www:www . 2>/dev/null
-sudo find . -type d -exec chmod 755 {} \; 2>/dev/null
-sudo find . -type f -exec chmod 644 {} \; 2>/dev/null
+sudo chown -R www:www . 2>/dev/null || true
+sudo find . -type d -exec chmod 755 {} \; 2>/dev/null || true
+sudo find . -type f -exec chmod 644 {} \; 2>/dev/null || true
 
 echo "--> Preparing directories..."
-touch logs/golang.log logs/golang-error.log
+mkdir -p logs
+touch logs/golang.log logs/golang-error.log 2>/dev/null || true
 sudo chown -R www:www logs deploy/resources
 sudo chmod -R 775 logs
 
