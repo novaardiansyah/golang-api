@@ -4,7 +4,7 @@ Hi Future Developer,
 
 Welcome to the **Golang REST API**! This project is an open-source RESTful API built with the Go programming language, designed with a clean and scalable architecture to build robust backend systems.
 
-This repository serves as a robust starting point for building scalable and maintainable APIs. It implements the Repository pattern, standardizes response formats, and includes built-in features like request validation, soft deletes, and pagination—making it ideal for learning, collaboration, or as a foundation for your next Go project.
+This project is an evolution and upgrade of the previous [personal-v4](https://github.com/novaardiansyah/personal-v4) project, which utilized Laravel as the backend for the mobile app. By migrating to Go, this API aims to achieve superior scalability and performance, providing a more efficient foundation for the [NovaApp](https://github.com/novaardiansyah/NovaApp) ecosystem.
 
 ## Dazzling Tech Stack! ⚡
 
