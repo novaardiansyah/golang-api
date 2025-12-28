@@ -1,17 +1,18 @@
 #!/bin/bash
 set -e
 
+# For Execute
+# sed -i 's/\r$//' deploy/setup.sh && bash deploy/setup.sh
+
+echo "--> Setting default permissions..."
+sudo chown -R www:www . 2>/dev/null
+sudo find . -type d -exec chmod 755 {} \; 2>/dev/null
+sudo find . -type f -exec chmod 644 {} \; 2>/dev/null
+
 echo "--> Preparing directories..."
-mkdir -p logs
 touch logs/golang.log logs/golang-error.log
 sudo chown -R www:www logs deploy/resources
 sudo chmod -R 775 logs
-
-sudo find deploy/resources -type f -exec chmod 644 {} +
-sudo find deploy/resources -type d -exec chmod 755 {} +
-
-echo "--> Securing env files..."
-sudo chmod 600 .env .env.local .env.production 2>/dev/null || true
 
 echo "--> Binary permission..."
 sudo chown www:www deploy/bin/api
@@ -24,4 +25,5 @@ sudo supervisorctl reread
 sudo supervisorctl update
 sudo supervisorctl restart golang-api_novadev_myid
 
-echo "--> Done."
+echo "--> Securing env files..."
+sudo chmod 600 .env .env.local .env.production artisan .well-known .git deploy/setup.sh 2>/dev/null

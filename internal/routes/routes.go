@@ -26,7 +26,7 @@ func SetupRoutes(app *fiber.App) {
 		})
 	})
 
-	api.Get("/test-email", func(c *fiber.Ctx) error {
+	api.Get("/test-email", middleware.Auth(), func(c *fiber.Ctx) error {
 		to := c.Query("to", "admin@novadev.my.id")
 
 		err := utils.SendEmail(to, "Testing Golang Email", map[string]any{
