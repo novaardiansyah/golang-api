@@ -36,7 +36,6 @@ type Payment struct {
 	PaymentAccount   *PaymentAccount `gorm:"foreignKey:PaymentAccountID" json:"-"`
 	PaymentAccountTo *PaymentAccount `gorm:"foreignKey:PaymentAccountToID" json:"-"`
 
-
 	Type               string       `gorm:"-" json:"type"`
 	FormattedAmount    string       `gorm:"-" json:"formatted_amount"`
 	FormattedDate      string       `gorm:"-" json:"formatted_date"`

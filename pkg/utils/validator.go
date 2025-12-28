@@ -1,40 +1,54 @@
 package utils
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/go-playground/validator/v10"
 )
 
 var validate = validator.New()
 
-// ValidateStruct validates struct using validator tags
 func ValidateStruct(s interface{}) error {
 	return validate.Struct(s)
 }
 
-// FormatValidationError formats validation errors
-func FormatValidationError(err error) map[string]string {
-	errors := make(map[string]string)
+func FormatValidationErrors(err error) map[string][]string {
+	errors := make(map[string][]string)
 
 	if validationErrors, ok := err.(validator.ValidationErrors); ok {
 		for _, e := range validationErrors {
-			errors[e.Field()] = getErrorMessage(e)
+			field := toSnakeCase(e.Field())
+			errors[field] = append(errors[field], getErrorMessage(e))
 		}
 	}
 
 	return errors
 }
 
+func toSnakeCase(s string) string {
+	var result strings.Builder
+	for i, r := range s {
+		if i > 0 && r >= 'A' && r <= 'Z' {
+			result.WriteRune('_')
+		}
+		result.WriteRune(r)
+	}
+	return strings.ToLower(result.String())
+}
+
 func getErrorMessage(e validator.FieldError) string {
+	field := toSnakeCase(e.Field())
 	switch e.Tag() {
 	case "required":
-		return "This field is required"
+		return fmt.Sprintf("The %s field is required.", field)
 	case "email":
-		return "Invalid email format"
+		return fmt.Sprintf("The %s field must be a valid email address.", field)
 	case "min":
-		return "Value is too short"
+		return fmt.Sprintf("The %s field must be at least %s characters.", field, e.Param())
 	case "max":
-		return "Value is too long"
+		return fmt.Sprintf("The %s field must not be greater than %s characters.", field, e.Param())
 	default:
-		return "Invalid value"
+		return fmt.Sprintf("The %s field is invalid.", field)
 	}
 }

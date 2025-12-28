@@ -10,6 +10,12 @@ type Response struct {
 	Data    interface{} `json:"data,omitempty"`
 }
 
+type ValidationErrorResponse struct {
+	Success bool                `json:"success"`
+	Message string              `json:"message"`
+	Errors  map[string][]string `json:"errors"`
+}
+
 type PaginatedResponse struct {
 	Success bool        `json:"success"`
 	Message string      `json:"message"`
@@ -46,6 +52,14 @@ func ErrorResponse(c *fiber.Ctx, statusCode int, message string) error {
 	return c.Status(statusCode).JSON(Response{
 		Success: false,
 		Message: message,
+	})
+}
+
+func ValidationError(c *fiber.Ctx, errors map[string][]string) error {
+	return c.Status(fiber.StatusUnprocessableEntity).JSON(ValidationErrorResponse{
+		Success: false,
+		Message: "Validation error",
+		Errors:  errors,
 	})
 }
 

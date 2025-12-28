@@ -14,6 +14,7 @@ func SetupRoutes(app *fiber.App) {
 
 	userRepo := repositories.NewUserRepository(db)
 	userController := controllers.NewUserController(userRepo)
+	authController := controllers.NewAuthController(*userRepo)
 
 	api := app.Group("/api")
 
@@ -23,6 +24,9 @@ func SetupRoutes(app *fiber.App) {
 			"message": "API is running",
 		})
 	})
+
+	auth := api.Group("/auth")
+	auth.Post("/login", authController.Login)
 
 	users := api.Group("/users", middleware.Auth())
 	users.Get("/", userController.Index)
@@ -39,5 +43,5 @@ func SetupRoutes(app *fiber.App) {
 
 	payments := api.Group("/payments", middleware.Auth())
 	payments.Get("/", paymentController.Index)
-  payments.Get("/:id", paymentController.Show)
+	payments.Get("/:id", paymentController.Show)
 }
