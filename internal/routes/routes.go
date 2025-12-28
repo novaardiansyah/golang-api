@@ -5,6 +5,7 @@ import (
 	"golang-api/internal/controllers"
 	"golang-api/internal/middleware"
 	"golang-api/internal/repositories"
+	"golang-api/pkg/utils"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -22,6 +23,34 @@ func SetupRoutes(app *fiber.App) {
 		return c.JSON(fiber.Map{
 			"success": true,
 			"message": "API is running",
+		})
+	})
+
+	api.Get("/test-email", func(c *fiber.Ctx) error {
+		to := c.Query("to", "admin@novadev.my.id")
+		data := utils.GetDefaultMailData(config.MailFromName, "Welcome to Golang API", "This is a test email sent from the new Golang implementation.")
+
+		smtpConf := utils.SMTPConfig{
+			Host:        config.MailHost,
+			Port:        config.MailPort,
+			Username:    config.MailUsername,
+			Password:    config.MailPassword,
+			FromAddress: config.MailFromAddress,
+			FromName:    config.MailFromName,
+		}
+
+		err := utils.SendEmail(smtpConf, to, "Testing Golang Email", "resources/views/emails/welcome.html", data)
+    
+		if err != nil {
+			return c.Status(500).JSON(fiber.Map{
+				"success": false,
+				"message": "Failed to send email: " + err.Error(),
+			})
+		}
+
+		return c.JSON(fiber.Map{
+			"success": true,
+			"message": "Email has been sent to " + to,
 		})
 	})
 

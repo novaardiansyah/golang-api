@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #ffffff;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      padding: 40px 20px;
+      border: 1px solid #e0e0e0;
+      background-color: #ffffff;
+    }
+    .text-primary {
+      color: #3366FF;
+    }
+    .header {
+      text-align: center;
+      color: #3366FF;
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+    .content {
+      font-size: 16px;
+      color: #333333;
+      line-height: 1.6;
+    }
+    .footer, .footer a {
+      text-align: center;
+      font-size: 13px;
+      color: #999;
+      margin-top: 40px;
+      text-decoration: none;
+    }
+  </style>
+  <title>{{ .Title }}</title>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      {{ .Header }}
+    </div>
+    <div class="content">
+      {{ .Content }}
+
+      <p style="margin-bottom: 26px">Terima kasih atas perhatian Anda.</p>
+
+      <p>Salam Hangat,</p>
+      <p>{{ .AuthorFirstName }}</p>
+    </div>
+
+    <div class="footer">
+      &copy; {{ .Year }} <a href="https://novaardiansyah.my.id">{{ .AuthorName }}</a>. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>
