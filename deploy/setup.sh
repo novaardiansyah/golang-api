@@ -28,4 +28,4 @@ sudo supervisorctl restart golang-api_novadev_myid
 echo "--> Securing env files..."
 sudo chmod 600 .env .env.local .env.production artisan .well-known .git Makefile deploy/setup.sh 2>/dev/null
 
-echo "--> All setup completed."
+echo "[SUCCESS] This script has been executed successfully."
