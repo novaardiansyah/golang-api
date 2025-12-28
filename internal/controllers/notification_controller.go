@@ -7,7 +7,6 @@ import (
 	"regexp"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/thedevsaddam/govalidator"
 )
 
 type NotificationController struct{}
@@ -16,26 +15,22 @@ func NewNotificationController() *NotificationController {
 	return &NotificationController{}
 }
 
-type UpdateNotificationSettingsRequest struct {
-	HasAllowNotification *bool  `json:"has_allow_notification"`
-	NotificationToken    string `json:"notification_token"`
-}
-
 func (ctrl *NotificationController) UpdateSettings(c *fiber.Ctx) error {
-	var req UpdateNotificationSettingsRequest
-
-	rules := govalidator.MapData{
-		"has_allow_notification": []string{"bool"},
-		"notification_token":     []string{"max:255"},
+	rules := map[string]utils.FieldRule{
+		"has_allow_notification": {Type: "bool"},
+		"notification_token":     {Type: "string", Max: 255},
 	}
 
-	errs := utils.ValidateJSONStruct(c, &req, rules)
+	data, errs := utils.ValidateJSONMap(c, rules)
 	if errs != nil {
 		return utils.ValidationError(c, errs)
 	}
 
-	if req.NotificationToken != "" {
-		if !validateExpoToken(req.NotificationToken) {
+	hasAllowNotification := utils.GetBool(data, "has_allow_notification")
+	notificationToken := utils.GetString(data, "notification_token")
+
+	if notificationToken != nil && *notificationToken != "" {
+		if !validateExpoToken(*notificationToken) {
 			return utils.ErrorResponse(c, fiber.StatusBadRequest, "Invalid Expo push token format")
 		}
 	}
@@ -44,13 +39,17 @@ func (ctrl *NotificationController) UpdateSettings(c *fiber.Ctx) error {
 	db := config.GetDB()
 
 	updates := make(map[string]interface{})
-	if req.HasAllowNotification != nil {
-		updates["has_allow_notification"] = *req.HasAllowNotification
+	if hasAllowNotification != nil {
+		updates["has_allow_notification"] = *hasAllowNotification
 	}
-	updates["notification_token"] = req.NotificationToken
+	if notificationToken != nil {
+		updates["notification_token"] = *notificationToken
+	}
 
-	if err := db.Model(&models.User{}).Where("id = ?", userID).Updates(updates).Error; err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to update notification settings")
+	if len(updates) > 0 {
+		if err := db.Model(&models.User{}).Where("id = ?", userID).Updates(updates).Error; err != nil {
+			return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to update notification settings")
+		}
 	}
 
 	return utils.SuccessResponse(c, "Notification settings updated successfully", nil)
