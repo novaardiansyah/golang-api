@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/thedevsaddam/govalidator"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -24,8 +25,8 @@ func NewAuthController(userRepo repositories.UserRepository) *AuthController {
 }
 
 type LoginRequest struct {
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required,min=6"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 type LoginResponse struct {
@@ -34,12 +35,15 @@ type LoginResponse struct {
 
 func (ctrl *AuthController) Login(c *fiber.Ctx) error {
 	var req LoginRequest
-	if err := c.BodyParser(&req); err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Invalid request body")
+
+	rules := govalidator.MapData{
+		"email":    []string{"required", "email"},
+		"password": []string{"required", "min:6"},
 	}
 
-	if err := utils.ValidateStruct(req); err != nil {
-		return utils.ValidationError(c, utils.FormatValidationErrors(err))
+	errs := utils.ValidateJSONStruct(c, &req, rules)
+	if errs != nil {
+		return utils.ValidationError(c, errs)
 	}
 
 	user, err := ctrl.userRepo.FindByEmail(req.Email)
