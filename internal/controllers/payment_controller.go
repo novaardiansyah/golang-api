@@ -1,11 +1,23 @@
 package controllers
 
 import (
+	"golang-api/internal/config"
+	"golang-api/internal/models"
 	"golang-api/internal/repositories"
 	"golang-api/pkg/utils"
+	"math"
 	"strconv"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/thedevsaddam/govalidator"
+)
+
+const (
+	PaymentTypeExpense    = 1
+	PaymentTypeIncome     = 2
+	PaymentTypeTransfer   = 3
+	PaymentTypeWithdrawal = 4
 )
 
 type PaymentController struct {
@@ -65,4 +77,124 @@ func (ctrl *PaymentController) Show(c *fiber.Ctx) error {
 	}
 
 	return utils.SuccessResponse(c, "Payment retrieved successfully", payment)
+}
+
+type SummaryResponse struct {
+	TotalBalance        int64           `json:"total_balance"`
+	ScheduledExpense    int64           `json:"scheduled_expense"`
+	TotalAfterScheduled int64           `json:"total_after_scheduled"`
+	InitialBalance      int64           `json:"initial_balance"`
+	Income              int64           `json:"income"`
+	Expenses            int64           `json:"expenses"`
+	Withdrawal          int64           `json:"withdrawal"`
+	Transfer            int64           `json:"transfer"`
+	Percents            SummaryPercents `json:"percents"`
+	Period              SummaryPeriod   `json:"period"`
+}
+
+type SummaryPercents struct {
+	Income     float64 `json:"income"`
+	Expenses   float64 `json:"expenses"`
+	Withdrawal float64 `json:"withdrawal"`
+	Transfer   float64 `json:"transfer"`
+}
+
+type SummaryPeriod struct {
+	StartDate string `json:"start_date"`
+	EndDate   string `json:"end_date"`
+}
+
+func (ctrl *PaymentController) Summary(c *fiber.Ctx) error {
+	data := make(map[string]interface{})
+
+	rules := govalidator.MapData{
+		"startDate": []string{"date"},
+		"endDate":   []string{"date"},
+	}
+
+	errs := utils.ValidateJSON(c, &data, rules)
+	if errs != nil {
+		return utils.ValidationError(c, errs)
+	}
+
+	var startDate, endDate string
+
+	if val, ok := data["startDate"].(string); ok && val != "" {
+		startDate = val
+	} else {
+		now := time.Now()
+		startDate = time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location()).Format("2006-01-02")
+	}
+
+	if val, ok := data["endDate"].(string); ok && val != "" {
+		endDate = val
+	} else {
+		now := time.Now()
+		endDate = time.Date(now.Year(), now.Month()+1, 0, 0, 0, 0, 0, now.Location()).Format("2006-01-02")
+	}
+
+	userID := c.Locals("user_id").(uint)
+	db := config.GetDB()
+
+	var totals struct {
+		TotalIncome      int64
+		TotalExpense     int64
+		TotalWithdrawal  int64
+		TotalTransfer    int64
+		ScheduledExpense int64
+	}
+
+	db.Model(&models.Payment{}).
+		Where("user_id = ?", userID).
+		Where("date BETWEEN ? AND ?", startDate, endDate).
+		Select(`
+			SUM(CASE WHEN type_id = ? THEN amount ELSE 0 END) as total_income,
+			SUM(CASE WHEN type_id = ? THEN amount ELSE 0 END) as total_expense,
+			SUM(CASE WHEN type_id = ? THEN amount ELSE 0 END) as total_withdrawal,
+			SUM(CASE WHEN type_id = ? THEN amount ELSE 0 END) as total_transfer,
+			SUM(CASE WHEN type_id = ? AND is_scheduled = 1 THEN amount ELSE 0 END) as scheduled_expense
+		`, PaymentTypeIncome, PaymentTypeExpense, PaymentTypeWithdrawal, PaymentTypeTransfer, PaymentTypeExpense).
+		Scan(&totals)
+
+	var totalBalance int64
+	db.Model(&models.PaymentAccount{}).
+		Where("user_id = ?", userID).
+		Select("COALESCE(SUM(deposit), 0)").
+		Scan(&totalBalance)
+
+	initialBalance := totals.TotalIncome + totals.TotalExpense
+
+	var percentIncome, percentExpense, percentWithdrawal, percentTransfer float64
+
+	if initialBalance > 0 {
+		percentIncome = math.Round((float64(totals.TotalIncome)/float64(initialBalance)*100)*100) / 100
+		percentExpense = math.Round((float64(totals.TotalExpense)/float64(initialBalance)*100)*100) / 100
+		percentWithdrawal = math.Round((float64(totals.TotalWithdrawal)/float64(initialBalance)*100)*100) / 100
+		percentTransfer = math.Round((float64(totals.TotalTransfer)/float64(initialBalance)*100)*100) / 100
+	}
+
+	totalAfterScheduled := totalBalance - totals.ScheduledExpense
+
+	response := SummaryResponse{
+		TotalBalance:        totalBalance,
+		ScheduledExpense:    totals.ScheduledExpense,
+		TotalAfterScheduled: totalAfterScheduled,
+		InitialBalance:      initialBalance,
+		Income:              totals.TotalIncome,
+		Expenses:            totals.TotalExpense,
+		Withdrawal:          totals.TotalWithdrawal,
+		Transfer:            totals.TotalTransfer,
+		Percents: SummaryPercents{
+			Income:     percentIncome,
+			Expenses:   percentExpense,
+			Withdrawal: percentWithdrawal,
+			Transfer:   percentTransfer,
+		},
+		Period: SummaryPeriod{
+			StartDate: startDate,
+			EndDate:   endDate,
+		},
+	}
+
+	return utils.SuccessResponse(c, "Summary retrieved successfully", response)
 }

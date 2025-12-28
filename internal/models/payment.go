@@ -19,6 +19,7 @@ func (d DateOnly) MarshalJSON() ([]byte, error) {
 
 type Payment struct {
 	ID                 uint            `gorm:"primaryKey" json:"id"`
+	UserID             uint            `json:"user_id"`
 	Code               string          `json:"code"`
 	Name               string          `json:"name"`
 	Date               DateOnly        `json:"date"`
