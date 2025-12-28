@@ -37,6 +37,12 @@ This project follows a clean directory structure to maintain a clear separation 
 - ✅ **Security**: Password hashing with Bcrypt.
 - ✅ **Live Reload**: Support for `air` during development.
 
+## Mobile App Integration 📱
+
+This project is built to work seamlessly with the **NovaApp** mobile application. NovaApp is a modern finance management app built with React Native, Expo, and TypeScript.
+
+- **Mobile App**: [NovaApp](https://github.com/novaardiansyah/NovaApp)
+
 ## Credentials & Environment 🔐
 
 While this repository is public, please note that all forms of credentials, API keys (including `.env`), and environment configurations are **not provided for the public**. Access to production secrets remains restricted for security reasons.
