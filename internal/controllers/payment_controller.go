@@ -6,8 +6,12 @@ import (
 	"golang-api/internal/repositories"
 	"golang-api/pkg/utils"
 	"math"
+	"path"
 	"strconv"
+	"strings"
 	"time"
+
+	"encoding/json"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/thedevsaddam/govalidator"
@@ -197,4 +201,72 @@ func (ctrl *PaymentController) Summary(c *fiber.Ctx) error {
 	}
 
 	return utils.SuccessResponse(c, "Summary retrieved successfully", response)
+}
+
+type AttachmentResponse struct {
+	ID            int                 `json:"id"`
+	URL           string              `json:"url"`
+	Filepath      string              `json:"filepath"`
+	Filename      string              `json:"filename"`
+	Extension     string              `json:"extension"`
+	FormattedSize string              `json:"formatted_size"`
+	Original      *OriginalAttachment `json:"original"`
+}
+
+type OriginalAttachment struct {
+	URL           string `json:"url"`
+	FormattedSize string `json:"formatted_size"`
+}
+
+func (ctrl *PaymentController) GetAttachments(c *fiber.Ctx) error {
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Invalid payment ID")
+	}
+
+	payment, err := ctrl.repo.FindByID(id)
+	if err != nil {
+		return utils.ErrorResponse(c, fiber.StatusNotFound, "Payment not found")
+	}
+
+	var attachments []string
+	if len(payment.Attachments) > 0 {
+		if err := json.Unmarshal(payment.Attachments, &attachments); err != nil {
+			attachments = []string{}
+		}
+	}
+
+	var responseData []AttachmentResponse
+	for i, attachment := range attachments {
+		filename := path.Base(attachment)
+		ext := strings.TrimPrefix(path.Ext(filename), ".")
+		nameOnly := strings.TrimSuffix(filename, path.Ext(filename))
+
+		mediumName := "medium-" + nameOnly + "." + ext
+		mediumPath := "images/payment/" + mediumName
+		originalPath := "images/payment/" + filename
+
+		mediumURL := config.WebURL + "/storage/" + mediumPath
+		originalURL := config.WebURL + "/storage/" + originalPath
+
+		responseData = append(responseData, AttachmentResponse{
+			ID:            i + 1,
+			URL:           mediumURL,
+			Filepath:      mediumPath,
+			Filename:      mediumName,
+			Extension:     ext,
+			FormattedSize: "0 KB",
+			Original: &OriginalAttachment{
+				URL:           originalURL,
+				FormattedSize: "0 KB",
+			},
+		})
+	}
+
+	message := "No attachments found"
+	if len(responseData) > 0 {
+		message = "Attachments found"
+	}
+
+	return utils.SuccessResponse(c, message, responseData)
 }

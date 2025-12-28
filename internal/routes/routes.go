@@ -45,6 +45,7 @@ func SetupRoutes(app *fiber.App) {
 	payments.Get("/", paymentController.Index)
 	payments.Get("/summary", paymentController.Summary)
 	payments.Get("/:id", paymentController.Show)
+	payments.Get("/:id/attachments", paymentController.GetAttachments)
 
 	notificationController := controllers.NewNotificationController()
 
