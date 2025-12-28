@@ -4,6 +4,8 @@
 *.dll
 *.so
 *.dylib
+*api
+*api-*
 
 # Test binary, built with `go test -c`
 *.test
@@ -32,10 +34,10 @@ _env
 .agent/*
 .antigravity/*
 tmp/*
-deploy/bin/*
 
 # OS
 .DS_Store
 Thumbs.db
+
 logs/golang-error.log
 logs/golang.log
