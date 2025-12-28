@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 
 # For Execute
 # sed -i 's/\r$//' deploy/setup.sh && bash deploy/setup.sh
@@ -28,3 +27,5 @@ sudo supervisorctl restart golang-api_novadev_myid
 
 echo "--> Securing env files..."
 sudo chmod 600 .env .env.local .env.production artisan .well-known .git Makefile deploy/setup.sh 2>/dev/null
+
+echo "--> All setup completed."
