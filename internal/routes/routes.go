@@ -59,13 +59,6 @@ func SetupRoutes(app *fiber.App) {
 	users.Get("/", userController.Index)
 	users.Get("/:id", userController.Show)
 
-	galleryRepo := repositories.NewGalleryRepository(db)
-	galleryController := controllers.NewGalleryController(galleryRepo)
-
-	galleries := api.Group("/galleries", middleware.Auth())
-	galleries.Get("/", galleryController.Index)
-	galleries.Post("/upload", galleryController.Upload)
-
 	paymentRepo := repositories.NewPaymentRepository(db)
 	paymentController := controllers.NewPaymentController(paymentRepo)
 

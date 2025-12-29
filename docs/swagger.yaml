@@ -70,29 +70,6 @@ definitions:
       url:
         type: string
     type: object
-  internal_controllers.GallerySwagger:
-    properties:
-      created_at:
-        type: string
-      deleted_at:
-        type: string
-      description:
-        type: string
-      file_name:
-        type: string
-      file_size:
-        type: integer
-      id:
-        type: integer
-      is_private:
-        type: boolean
-      updated_at:
-        type: string
-      url:
-        type: string
-      user_id:
-        type: integer
-    type: object
   internal_controllers.LoginRequest:
     properties:
       email:
@@ -277,92 +254,6 @@ paths:
       summary: Authenticate a user
       tags:
       - auth
-  /galleries:
-    get:
-      consumes:
-      - application/json
-      description: Get a paginated list of galleries
-      parameters:
-      - default: 1
-        description: Page number
-        in: query
-        name: page
-        type: integer
-      - default: 10
-        description: Items per page
-        in: query
-        name: per_page
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/golang-api_pkg_utils.PaginatedResponse'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/internal_controllers.GallerySwagger'
-                  type: array
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/golang-api_pkg_utils.Response'
-      security:
-      - BearerAuth: []
-      summary: List galleries
-      tags:
-      - galleries
-  /galleries/upload:
-    post:
-      consumes:
-      - multipart/form-data
-      description: Upload a new image to the gallery with optimized versions
-      parameters:
-      - description: Image file to upload
-        in: formData
-        name: file
-        required: true
-        type: file
-      - description: Image description
-        in: formData
-        name: description
-        type: string
-      - default: false
-        description: Set image as private
-        in: formData
-        name: is_private
-        type: boolean
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            allOf:
-            - $ref: '#/definitions/golang-api_pkg_utils.Response'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/internal_controllers.GallerySwagger'
-                  type: array
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/golang-api_pkg_utils.Response'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/golang-api_pkg_utils.Response'
-      security:
-      - BearerAuth: []
-      summary: Upload image to gallery
-      tags:
-      - galleries
   /notifications/settings:
     put:
       consumes:
