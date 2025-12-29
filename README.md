@@ -43,7 +43,7 @@ This project is built to work seamlessly with the **NovaApp** mobile application
 
 - **Mobile App**: [NovaApp](https://github.com/novaardiansyah/NovaApp)
 
-### 📚 API Documentation
+### API Documentation 📚
 This project includes **integrated API documentation** powered by [L5-Swagger](https://github.com/DarkaOnLine/L5-Swagger). Access it at: [Official Documentation](https://golang-api.novadev.my.id/api/documentation)
 
 <img src="public/markdown/preview-1.png" width="550" alt="API Documentation Preview" />
