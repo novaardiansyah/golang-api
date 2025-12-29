@@ -24,7 +24,7 @@ import (
 // @contact.url https://novaardiansyah.my.id
 // @contact.email support@novadev.my.id
 
-// @license.name MIT
+// @license.name MIT License
 // @license.url https://github.com/novaardiansyah/golang-api/blob/main/LICENSE
 
 // @host localhost:8080
