@@ -90,6 +90,8 @@ definitions:
         type: string
       url:
         type: string
+      user_id:
+        type: integer
     type: object
   internal_controllers.LoginRequest:
     properties:
@@ -312,6 +314,51 @@ paths:
       security:
       - BearerAuth: []
       summary: List galleries
+      tags:
+      - galleries
+  /galleries/upload:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload a new image to the gallery
+      parameters:
+      - description: Image file to upload
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: Image description
+        in: formData
+        name: description
+        type: string
+      - default: false
+        description: Set image as private
+        in: formData
+        name: is_private
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/golang-api_pkg_utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_controllers.GallerySwagger'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/golang-api_pkg_utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/golang-api_pkg_utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Upload image to gallery
       tags:
       - galleries
   /notifications/settings:

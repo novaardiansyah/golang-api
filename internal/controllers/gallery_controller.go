@@ -1,9 +1,12 @@
 package controllers
 
 import (
+	"fmt"
 	"golang-api/internal/repositories"
 	"golang-api/pkg/utils"
+	"path/filepath"
 	"strconv"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -53,4 +56,62 @@ func (ctrl *GalleryController) Index(c *fiber.Ctx) error {
 	}
 
 	return utils.PaginatedSuccessResponse(c, "Galleries retrieved successfully", galleries, page, perPage, total, len(galleries))
+}
+
+// Upload godoc
+// @Summary Upload image to gallery
+// @Description Upload a new image to the gallery
+// @Tags galleries
+// @Accept multipart/form-data
+// @Produce json
+// @Param file formData file true "Image file to upload"
+// @Param description formData string false "Image description"
+// @Param is_private formData boolean false "Set image as private" default(false)
+// @Success 201 {object} utils.Response{data=GallerySwagger}
+// @Failure 400 {object} utils.Response
+// @Failure 500 {object} utils.Response
+// @Router /galleries/upload [post]
+// @Security BearerAuth
+func (ctrl *GalleryController) Upload(c *fiber.Ctx) error {
+	file, err := c.FormFile("file")
+	if err != nil {
+		return utils.ErrorResponse(c, fiber.StatusBadRequest, "No file uploaded")
+	}
+
+	allowedTypes := map[string]bool{
+		"image/jpeg": true,
+		"image/png":  true,
+		"image/gif":  true,
+		"image/webp": true,
+	}
+
+	contentType := file.Header.Get("Content-Type")
+	if !allowedTypes[contentType] {
+		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed")
+	}
+
+	maxSize := int64(10 * 1024 * 1024)
+	if file.Size > maxSize {
+		return utils.ErrorResponse(c, fiber.StatusBadRequest, "File size exceeds 10MB limit")
+	}
+
+	ext := filepath.Ext(file.Filename)
+	newFileName := fmt.Sprintf("%d%s", time.Now().UnixNano(), ext)
+	filePath := "gallery/" + newFileName
+	fullPath := "images/" + filePath
+
+	if err := c.SaveFile(file, fullPath); err != nil {
+		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to save file")
+	}
+
+	description := c.FormValue("description", "")
+	isPrivate := c.FormValue("is_private", "false") == "true"
+	userID := c.Locals("user_id").(uint)
+
+	gallery, err := ctrl.repo.Create(userID, newFileName, filePath, uint32(file.Size), description, isPrivate)
+	if err != nil {
+		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to save gallery record")
+	}
+
+	return utils.CreatedResponse(c, "Image uploaded successfully", gallery)
 }

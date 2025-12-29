@@ -4,6 +4,7 @@ import "time"
 
 type GallerySwagger struct {
 	ID          uint      `json:"id"`
+	UserID      uint      `json:"user_id"`
 	FileName    string    `json:"file_name"`
 	Url         string    `json:"url"`
 	FileSize    uint32    `json:"file_size"`

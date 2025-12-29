@@ -9,6 +9,7 @@ import (
 
 type Gallery struct {
 	ID          uint           `gorm:"primaryKey" json:"id"`
+	UserID      uint           `json:"user_id"`
 	FileName    string         `json:"file_name"`
 	FilePath    string         `json:"-"`
 	Url         string         `gorm:"-" json:"url"`
