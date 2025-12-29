@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"golang-api/internal/models"
 	"golang-api/internal/repositories"
 	"golang-api/pkg/utils"
 	"path/filepath"
@@ -60,14 +61,14 @@ func (ctrl *GalleryController) Index(c *fiber.Ctx) error {
 
 // Upload godoc
 // @Summary Upload image to gallery
-// @Description Upload a new image to the gallery
+// @Description Upload a new image to the gallery with optimized versions
 // @Tags galleries
 // @Accept multipart/form-data
 // @Produce json
 // @Param file formData file true "Image file to upload"
 // @Param description formData string false "Image description"
 // @Param is_private formData boolean false "Set image as private" default(false)
-// @Success 201 {object} utils.Response{data=GallerySwagger}
+// @Success 201 {object} utils.Response{data=[]GallerySwagger}
 // @Failure 400 {object} utils.Response
 // @Failure 500 {object} utils.Response
 // @Router /galleries/upload [post]
@@ -99,6 +100,7 @@ func (ctrl *GalleryController) Upload(c *fiber.Ctx) error {
 	newFileName := fmt.Sprintf("%d%s", time.Now().UnixNano(), ext)
 	filePath := "images/gallery/" + newFileName
 	fullPath := "public/" + filePath
+	outputDir := "public/images/gallery"
 
 	if err := c.SaveFile(file, fullPath); err != nil {
 		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to save file")
@@ -108,10 +110,36 @@ func (ctrl *GalleryController) Upload(c *fiber.Ctx) error {
 	isPrivate := c.FormValue("is_private", "false") == "true"
 	userID := c.Locals("user_id").(uint)
 
-	gallery, err := ctrl.repo.Create(userID, newFileName, filePath, uint32(file.Size), description, isPrivate)
+	var galleries []*models.Gallery
+
+	galleries = append(galleries, &models.Gallery{
+		UserID:      userID,
+		FileName:    newFileName,
+		FilePath:    filePath,
+		FileSize:    uint32(file.Size),
+		Description: description,
+		IsPrivate:   isPrivate,
+	})
+
+	processedImages, err := utils.ProcessImage(fullPath, outputDir, newFileName)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to save gallery record")
+		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to process image: "+err.Error())
 	}
 
-	return utils.CreatedResponse(c, "Image uploaded successfully", gallery)
+	for _, img := range processedImages {
+		galleries = append(galleries, &models.Gallery{
+			UserID:      userID,
+			FileName:    img.FileName,
+			FilePath:    img.FilePath,
+			FileSize:    img.FileSize,
+			Description: description,
+			IsPrivate:   isPrivate,
+		})
+	}
+
+	if err := ctrl.repo.CreateMany(galleries); err != nil {
+		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to save gallery records")
+	}
+
+	return utils.CreatedResponse(c, "Image uploaded successfully", galleries)
 }

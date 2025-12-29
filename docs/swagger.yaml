@@ -320,7 +320,7 @@ paths:
     post:
       consumes:
       - multipart/form-data
-      description: Upload a new image to the gallery
+      description: Upload a new image to the gallery with optimized versions
       parameters:
       - description: Image file to upload
         in: formData
@@ -346,7 +346,9 @@ paths:
             - $ref: '#/definitions/golang-api_pkg_utils.Response'
             - properties:
                 data:
-                  $ref: '#/definitions/internal_controllers.GallerySwagger'
+                  items:
+                    $ref: '#/definitions/internal_controllers.GallerySwagger'
+                  type: array
               type: object
         "400":
           description: Bad Request

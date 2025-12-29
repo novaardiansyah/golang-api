@@ -148,7 +148,7 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "Upload a new image to the gallery",
+                "description": "Upload a new image to the gallery with optimized versions",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -193,7 +193,10 @@
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/internal_controllers.GallerySwagger"
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/internal_controllers.GallerySwagger"
+                                            }
                                         }
                                     }
                                 }

@@ -154,7 +154,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Upload a new image to the gallery",
+                "description": "Upload a new image to the gallery with optimized versions",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -199,7 +199,10 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/internal_controllers.GallerySwagger"
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/internal_controllers.GallerySwagger"
+                                            }
                                         }
                                     }
                                 }

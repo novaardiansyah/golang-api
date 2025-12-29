@@ -43,3 +43,17 @@ func (r *GalleryRepository) Create(userID uint, fileName, filePath string, fileS
 	r.db.First(gallery, gallery.ID)
 	return gallery, nil
 }
+
+func (r *GalleryRepository) CreateMany(galleries []*models.Gallery) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		for _, gallery := range galleries {
+			if err := tx.Create(gallery).Error; err != nil {
+				return err
+			}
+		}
+		for _, gallery := range galleries {
+			tx.First(gallery, gallery.ID)
+		}
+		return nil
+	})
+}

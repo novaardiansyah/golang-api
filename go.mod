@@ -6,6 +6,7 @@ require (
 	github.com/gofiber/fiber/v2 v2.52.10
 	github.com/gofiber/swagger v1.1.1
 	github.com/joho/godotenv v1.5.1
+	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/swaggo/swag v1.16.4
 	github.com/thedevsaddam/govalidator v1.9.10
 	golang.org/x/crypto v0.46.0
