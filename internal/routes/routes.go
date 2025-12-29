@@ -37,7 +37,7 @@ func SetupRoutes(app *fiber.App) {
 		err := utils.SendEmail(to, "Testing Golang Email", map[string]any{
 			"Name":    "User Testing",
 			"Message": "This is a dynamic message from the route!",
-		}, "deploy/resources/views/emails/main.html", "deploy/resources/views/emails/test_content.html")
+		}, "resources/views/emails/main.html", "resources/views/emails/test_content.html")
 
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{

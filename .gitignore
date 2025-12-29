@@ -4,8 +4,8 @@
 *.dll
 *.so
 *.dylib
-*api
-*api-*
+runner-app
+runner-app.exe
 
 # Test binary, built with `go test -c`
 *.test
@@ -31,9 +31,9 @@ _env
 *.swp
 *.swo
 *~
-.agent/*
-.antigravity/*
-tmp/*
+.agent/
+.antigravity/
+tmp/
 
 # OS
 .DS_Store

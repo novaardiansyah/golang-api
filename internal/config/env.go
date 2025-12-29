@@ -9,10 +9,9 @@ import (
 )
 
 var (
-	WebURL    string
-	JWTSecret string
 	AppURL    string
 	AppPort   string
+  CdnUrl    string
 
 	MailHost        string
 	MailPort        int
@@ -29,10 +28,9 @@ func LoadEnv() {
 		log.Println("Warning: .env file not found, using system environment variables")
 	}
 
-	WebURL = os.Getenv("WEB_URL")
-	JWTSecret = os.Getenv("JWT_SECRET")
 	AppURL = os.Getenv("APP_URL")
 	AppPort = os.Getenv("APP_PORT")
+  CdnUrl = os.Getenv("CDN_URL")
   
 	if AppPort == "" {
 		AppPort = "8080"

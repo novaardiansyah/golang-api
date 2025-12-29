@@ -6,11 +6,11 @@ run:
 
 # Build the application (Windows)
 build:
-	set GOOS=windows&& set GOARCH=amd64&& go build -o deploy/bin/api.exe cmd/api/main.go
+	set GOOS=windows&& set GOARCH=amd64&& go build -o ./runner-app.exe cmd/api/main.go
 
 # Build for Linux (production)
 build-linux:
-	powershell -Command "$$env:GOOS='linux'; $$env:GOARCH='amd64'; go build -ldflags='-s -w' -o deploy/bin/api ./cmd/api"
+	powershell -Command "$$env:GOOS='linux'; $$env:GOARCH='amd64'; go build -ldflags='-s -w' -o ./runner-app ./cmd/api"
 
 # Run with hot reload (requires air)
 dev:
@@ -21,10 +21,11 @@ install:
 	go mod download
 	go mod tidy
 
-# Clean build artifacts
+# Clean build artifacts (Windows compatible)
 clean:
-	rm -rf tmp/
-	rm -rf deploy/bin/
+	-cmd /c if exist tmp rmdir /s /q tmp
+	-cmd /c if exist runner-app del /q runner-app
+	-cmd /c if exist runner-app.exe del /q runner-app.exe
 
 # Install air for hot reload
 install-air:

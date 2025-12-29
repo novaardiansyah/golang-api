@@ -298,8 +298,8 @@ func (ctrl *PaymentController) GetAttachments(c *fiber.Ctx) error {
 		mediumPath := "images/payment/" + mediumName
 		originalPath := "images/payment/" + filename
 
-		mediumURL := config.WebURL + "/storage/" + mediumPath
-		originalURL := config.WebURL + "/storage/" + originalPath
+		mediumURL := config.CdnUrl + "/" + mediumPath
+		originalURL := config.CdnUrl + "/" + originalPath
 
 		responseData = append(responseData, AttachmentResponse{
 			ID:            i + 1,
