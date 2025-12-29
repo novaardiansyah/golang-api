@@ -42,5 +42,5 @@ Thumbs.db
 logs/golang-error.log
 logs/golang.log
 
-images/gallery/*
-!images/gallery/.gitkeep
+public/images/gallery/*
+!public/images/gallery/.gitkeep

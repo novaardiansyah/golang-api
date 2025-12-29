@@ -97,8 +97,8 @@ func (ctrl *GalleryController) Upload(c *fiber.Ctx) error {
 
 	ext := filepath.Ext(file.Filename)
 	newFileName := fmt.Sprintf("%d%s", time.Now().UnixNano(), ext)
-	filePath := "gallery/" + newFileName
-	fullPath := "images/" + filePath
+	filePath := "images/gallery/" + newFileName
+	fullPath := "public/" + filePath
 
 	if err := c.SaveFile(file, fullPath); err != nil {
 		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to save file")

@@ -14,6 +14,8 @@ import (
 func SetupRoutes(app *fiber.App) {
 	db := config.GetDB()
 
+	app.Static("/", "./public")
+
 	userRepo := repositories.NewUserRepository(db)
 	userController := controllers.NewUserController(userRepo)
 	authController := controllers.NewAuthController(*userRepo)

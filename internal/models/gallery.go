@@ -27,7 +27,7 @@ func (Gallery) TableName() string {
 
 func (g *Gallery) AfterFind(tx *gorm.DB) error {
 	if g.FilePath != "" {
-		g.Url = config.WebURL + "/storage/" + g.FilePath
+		g.Url = config.AppURL + "/" + g.FilePath
 	}
 	return nil
 }
