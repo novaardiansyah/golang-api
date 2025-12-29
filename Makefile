@@ -32,7 +32,7 @@ install-air:
 
 # Generate Swagger documentation
 swagger:
-	swag init -g cmd/api/main.go
+	swag init -g cmd/api/main.go --parseDependency
 
 # Show help
 help:

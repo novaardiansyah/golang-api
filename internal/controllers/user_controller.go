@@ -16,6 +16,18 @@ func NewUserController(repo *repositories.UserRepository) *UserController {
 	return &UserController{repo: repo}
 }
 
+// Index godoc
+// @Summary List users
+// @Description Get a paginated list of users
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param page query int false "Page number" default(1)
+// @Param per_page query int false "Items per page" default(15)
+// @Success 200 {object} utils.PaginatedResponse{data=[]UserSwagger}
+// @Failure 500 {object} utils.Response
+// @Router /users [get]
+// @Security ApiKeyAuth
 func (ctrl *UserController) Index(c *fiber.Ctx) error {
 	page, _ := strconv.Atoi(c.Query("page", "1"))
 	perPage, _ := strconv.Atoi(c.Query("per_page", "15"))
@@ -40,6 +52,18 @@ func (ctrl *UserController) Index(c *fiber.Ctx) error {
 	return utils.PaginatedSuccessResponse(c, "Users retrieved successfully", users, page, perPage, total, len(users))
 }
 
+// Show godoc
+// @Summary Get user details
+// @Description Get detailed information about a specific user
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param id path int true "User ID"
+// @Success 200 {object} utils.Response{data=UserSwagger}
+// @Failure 400 {object} utils.Response
+// @Failure 404 {object} utils.Response
+// @Router /users/{id} [get]
+// @Security ApiKeyAuth
 func (ctrl *UserController) Show(c *fiber.Ctx) error {
 	id, err := strconv.ParseUint(c.Params("id"), 10, 32)
 	if err != nil {

@@ -1,0 +1,55 @@
+package controllers
+
+import "time"
+
+type GallerySwagger struct {
+	ID          uint      `json:"id"`
+	FileName    string    `json:"file_name"`
+	Url         string    `json:"url"`
+	FileSize    uint32    `json:"file_size"`
+	IsPrivate   bool      `json:"is_private"`
+	Description string    `json:"description"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	DeletedAt   *string   `json:"deleted_at"`
+}
+
+type UserSwagger struct {
+	ID                   uint      `json:"id"`
+	Name                 string    `json:"name"`
+	Email                string    `json:"email"`
+	HasAllowNotification *bool     `json:"has_allow_notification"`
+	NotificationToken    *string   `json:"notification_token,omitempty"`
+	CreatedAt            time.Time `json:"created_at"`
+	UpdatedAt            time.Time `json:"updated_at"`
+	DeletedAt            *string   `json:"deleted_at,omitempty"`
+}
+
+type AccountInfoSwagger struct {
+	ID   *uint   `json:"id"`
+	Name *string `json:"name"`
+}
+
+type PaymentSwagger struct {
+	ID                 uint                `json:"id"`
+	UserID             uint                `json:"user_id"`
+	Code               string              `json:"code"`
+	Name               string              `json:"name"`
+	Date               string              `json:"date"`
+	Amount             int64               `json:"amount"`
+	HasItems           bool                `json:"has_items"`
+	IsScheduled        bool                `json:"is_scheduled"`
+	IsDraft            bool                `json:"is_draft"`
+	TypeID             uint                `json:"type_id"`
+	PaymentAccountID   *uint               `json:"payment_account_id"`
+	PaymentAccountToID *uint               `json:"payment_account_to_id"`
+	UpdatedAt          time.Time           `json:"updated_at"`
+	Type               string              `json:"type"`
+	FormattedAmount    string              `json:"formatted_amount"`
+	FormattedDate      string              `json:"formatted_date"`
+	FormattedUpdatedAt string              `json:"formatted_updated_at"`
+	AttachmentsCount   int                 `json:"attachments_count"`
+	ItemsCount         int                 `json:"items_count"`
+	Account            *AccountInfoSwagger `json:"account"`
+	AccountTo          *AccountInfoSwagger `json:"account_to"`
+}

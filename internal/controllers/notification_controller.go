@@ -12,10 +12,28 @@ import (
 
 type NotificationController struct{}
 
+type UpdateNotificationSettingsRequest struct {
+	HasAllowNotification int    `json:"has_allow_notification" validate:"numeric_between:0,1"`
+	NotificationToken    string `json:"notification_token" validate:"max:255"`
+}
+
 func NewNotificationController() *NotificationController {
 	return &NotificationController{}
 }
 
+// UpdateSettings godoc
+// @Summary Update notification settings
+// @Description Update user notification allowance and Expo push token
+// @Tags notifications
+// @Accept json
+// @Produce json
+// @Param settings body UpdateNotificationSettingsRequest true "Notification settings"
+// @Success 200 {object} utils.Response
+// @Failure 400 {object} utils.Response
+// @Failure 422 {object} utils.ValidationErrorResponse
+// @Failure 500 {object} utils.Response
+// @Router /notifications/settings [put]
+// @Security ApiKeyAuth
 func (ctrl *NotificationController) UpdateSettings(c *fiber.Ctx) error {
 	data := make(map[string]interface{})
 

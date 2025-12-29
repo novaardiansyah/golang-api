@@ -28,10 +28,67 @@ type PaymentController struct {
 	repo *repositories.PaymentRepository
 }
 
+type SummaryResponse struct {
+	TotalBalance        int64           `json:"total_balance"`
+	ScheduledExpense    int64           `json:"scheduled_expense"`
+	TotalAfterScheduled int64           `json:"total_after_scheduled"`
+	InitialBalance      int64           `json:"initial_balance"`
+	Income              int64           `json:"income"`
+	Expenses            int64           `json:"expenses"`
+	Withdrawal          int64           `json:"withdrawal"`
+	Transfer            int64           `json:"transfer"`
+	Percents            SummaryPercents `json:"percents"`
+	Period              SummaryPeriod   `json:"period"`
+}
+
+type SummaryPercents struct {
+	Income     float64 `json:"income"`
+	Expenses   float64 `json:"expenses"`
+	Withdrawal float64 `json:"withdrawal"`
+	Transfer   float64 `json:"transfer"`
+}
+
+type SummaryPeriod struct {
+	StartDate string `json:"start_date"`
+	EndDate   string `json:"end_date"`
+}
+
+type AttachmentResponse struct {
+	ID            int                 `json:"id"`
+	URL           string              `json:"url"`
+	Filepath      string              `json:"filepath"`
+	Filename      string              `json:"filename"`
+	Extension     string              `json:"extension"`
+	FormattedSize string              `json:"formatted_size"`
+	Original      *OriginalAttachment `json:"original"`
+}
+
+type OriginalAttachment struct {
+	URL           string `json:"url"`
+	FormattedSize string `json:"formatted_size"`
+}
+
 func NewPaymentController(repo *repositories.PaymentRepository) *PaymentController {
 	return &PaymentController{repo: repo}
 }
 
+// Index godoc
+// @Summary List payments
+// @Description Get a paginated list of payments with optional filters
+// @Tags payments
+// @Accept json
+// @Produce json
+// @Param page query int false "Page number" default(1)
+// @Param per_page query int false "Items per page" default(10)
+// @Param type query int false "Type ID (1: Expense, 2: Income, 3: Transfer, 4: Withdrawal)"
+// @Param account_id query int false "Account ID"
+// @Param date_from query string false "Start date (YYYY-MM-DD)"
+// @Param date_to query string false "End date (YYYY-MM-DD)"
+// @Param search query string false "Search query"
+// @Success 200 {object} utils.PaginatedResponse{data=[]PaymentSwagger}
+// @Failure 400 {object} utils.Response
+// @Router /payments [get]
+// @Security ApiKeyAuth
 func (ctrl *PaymentController) Index(c *fiber.Ctx) error {
 	page, _ := strconv.Atoi(c.Query("page", "1"))
 	perPage, _ := strconv.Atoi(c.Query("per_page", "10"))
@@ -69,6 +126,18 @@ func (ctrl *PaymentController) Index(c *fiber.Ctx) error {
 	return utils.PaginatedSuccessResponse(c, "Payments retrieved successfully", payments, page, perPage, total, len(payments))
 }
 
+// Show godoc
+// @Summary Get payment details
+// @Description Get detailed information about a specific payment
+// @Tags payments
+// @Accept json
+// @Produce json
+// @Param id path int true "Payment ID"
+// @Success 200 {object} utils.Response{data=PaymentSwagger}
+// @Failure 400 {object} utils.Response
+// @Failure 404 {object} utils.Response
+// @Router /payments/{id} [get]
+// @Security ApiKeyAuth
 func (ctrl *PaymentController) Show(c *fiber.Ctx) error {
 	paymentID, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
@@ -83,31 +152,18 @@ func (ctrl *PaymentController) Show(c *fiber.Ctx) error {
 	return utils.SuccessResponse(c, "Payment retrieved successfully", payment)
 }
 
-type SummaryResponse struct {
-	TotalBalance        int64           `json:"total_balance"`
-	ScheduledExpense    int64           `json:"scheduled_expense"`
-	TotalAfterScheduled int64           `json:"total_after_scheduled"`
-	InitialBalance      int64           `json:"initial_balance"`
-	Income              int64           `json:"income"`
-	Expenses            int64           `json:"expenses"`
-	Withdrawal          int64           `json:"withdrawal"`
-	Transfer            int64           `json:"transfer"`
-	Percents            SummaryPercents `json:"percents"`
-	Period              SummaryPeriod   `json:"period"`
-}
-
-type SummaryPercents struct {
-	Income     float64 `json:"income"`
-	Expenses   float64 `json:"expenses"`
-	Withdrawal float64 `json:"withdrawal"`
-	Transfer   float64 `json:"transfer"`
-}
-
-type SummaryPeriod struct {
-	StartDate string `json:"start_date"`
-	EndDate   string `json:"end_date"`
-}
-
+// Summary godoc
+// @Summary Get payment summary
+// @Description Get summary of payments within a date range
+// @Tags payments
+// @Accept json
+// @Produce json
+// @Param startDate query string false "Start date (YYYY-MM-DD)"
+// @Param endDate query string false "End date (YYYY-MM-DD)"
+// @Success 200 {object} utils.Response{data=SummaryResponse}
+// @Failure 422 {object} utils.ValidationErrorResponse
+// @Router /payments/summary [get]
+// @Security ApiKeyAuth
 func (ctrl *PaymentController) Summary(c *fiber.Ctx) error {
 	data := make(map[string]interface{})
 
@@ -203,21 +259,17 @@ func (ctrl *PaymentController) Summary(c *fiber.Ctx) error {
 	return utils.SuccessResponse(c, "Summary retrieved successfully", response)
 }
 
-type AttachmentResponse struct {
-	ID            int                 `json:"id"`
-	URL           string              `json:"url"`
-	Filepath      string              `json:"filepath"`
-	Filename      string              `json:"filename"`
-	Extension     string              `json:"extension"`
-	FormattedSize string              `json:"formatted_size"`
-	Original      *OriginalAttachment `json:"original"`
-}
-
-type OriginalAttachment struct {
-	URL           string `json:"url"`
-	FormattedSize string `json:"formatted_size"`
-}
-
+// GetAttachments godoc
+// @Summary Get payment attachments
+// @Description Get a list of attachments for a specific payment
+// @Tags payments
+// @Accept json
+// @Produce json
+// @Param id path int true "Payment ID"
+// @Success 200 {object} utils.Response{data=[]AttachmentResponse}
+// @Failure 400 {object} utils.Response
+// @Router /payments/{id}/attachments [get]
+// @Security ApiKeyAuth
 func (ctrl *PaymentController) GetAttachments(c *fiber.Ctx) error {
 	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {

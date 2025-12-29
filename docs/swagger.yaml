@@ -1,22 +1,31 @@
 basePath: /api
 definitions:
-  controllers.LoginRequest:
+  golang-api_pkg_utils.Meta:
     properties:
-      email:
-        type: string
-      password:
-        minLength: 6
-        type: string
-    required:
-    - email
-    - password
+      current_page:
+        type: integer
+      has_more_pages:
+        type: boolean
+      items_on_page:
+        type: integer
+      per_page:
+        type: integer
+      total_pages:
+        type: integer
+      total_records:
+        type: integer
     type: object
-  controllers.LoginResponse:
+  golang-api_pkg_utils.PaginatedResponse:
     properties:
-      token:
+      data: {}
+      message:
         type: string
+      meta:
+        $ref: '#/definitions/golang-api_pkg_utils.Meta'
+      success:
+        type: boolean
     type: object
-  utils.Response:
+  golang-api_pkg_utils.Response:
     properties:
       data: {}
       message:
@@ -24,7 +33,7 @@ definitions:
       success:
         type: boolean
     type: object
-  utils.ValidationErrorResponse:
+  golang-api_pkg_utils.ValidationErrorResponse:
     properties:
       errors:
         additionalProperties:
@@ -37,6 +46,186 @@ definitions:
       success:
         type: boolean
     type: object
+  internal_controllers.AccountInfoSwagger:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  internal_controllers.AttachmentResponse:
+    properties:
+      extension:
+        type: string
+      filename:
+        type: string
+      filepath:
+        type: string
+      formatted_size:
+        type: string
+      id:
+        type: integer
+      original:
+        $ref: '#/definitions/internal_controllers.OriginalAttachment'
+      url:
+        type: string
+    type: object
+  internal_controllers.GallerySwagger:
+    properties:
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      description:
+        type: string
+      file_name:
+        type: string
+      file_size:
+        type: integer
+      id:
+        type: integer
+      is_private:
+        type: boolean
+      updated_at:
+        type: string
+      url:
+        type: string
+    type: object
+  internal_controllers.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  internal_controllers.LoginResponse:
+    properties:
+      token:
+        type: string
+    type: object
+  internal_controllers.OriginalAttachment:
+    properties:
+      formatted_size:
+        type: string
+      url:
+        type: string
+    type: object
+  internal_controllers.PaymentSwagger:
+    properties:
+      account:
+        $ref: '#/definitions/internal_controllers.AccountInfoSwagger'
+      account_to:
+        $ref: '#/definitions/internal_controllers.AccountInfoSwagger'
+      amount:
+        type: integer
+      attachments_count:
+        type: integer
+      code:
+        type: string
+      date:
+        type: string
+      formatted_amount:
+        type: string
+      formatted_date:
+        type: string
+      formatted_updated_at:
+        type: string
+      has_items:
+        type: boolean
+      id:
+        type: integer
+      is_draft:
+        type: boolean
+      is_scheduled:
+        type: boolean
+      items_count:
+        type: integer
+      name:
+        type: string
+      payment_account_id:
+        type: integer
+      payment_account_to_id:
+        type: integer
+      type:
+        type: string
+      type_id:
+        type: integer
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  internal_controllers.SummaryPercents:
+    properties:
+      expenses:
+        type: number
+      income:
+        type: number
+      transfer:
+        type: number
+      withdrawal:
+        type: number
+    type: object
+  internal_controllers.SummaryPeriod:
+    properties:
+      end_date:
+        type: string
+      start_date:
+        type: string
+    type: object
+  internal_controllers.SummaryResponse:
+    properties:
+      expenses:
+        type: integer
+      income:
+        type: integer
+      initial_balance:
+        type: integer
+      percents:
+        $ref: '#/definitions/internal_controllers.SummaryPercents'
+      period:
+        $ref: '#/definitions/internal_controllers.SummaryPeriod'
+      scheduled_expense:
+        type: integer
+      total_after_scheduled:
+        type: integer
+      total_balance:
+        type: integer
+      transfer:
+        type: integer
+      withdrawal:
+        type: integer
+    type: object
+  internal_controllers.UpdateNotificationSettingsRequest:
+    properties:
+      has_allow_notification:
+        type: integer
+      notification_token:
+        type: string
+    type: object
+  internal_controllers.UserSwagger:
+    properties:
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      email:
+        type: string
+      has_allow_notification:
+        type: boolean
+      id:
+        type: integer
+      name:
+        type: string
+      notification_token:
+        type: string
+      updated_at:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact:
@@ -45,7 +234,7 @@ info:
     url: https://novaardiansyah.my.id
   description: This is an official Golang API documentation for NovaApp.
   license:
-    name: MIT
+    name: MIT License
     url: https://github.com/novaardiansyah/golang-api/blob/main/LICENSE
   termsOfService: https://novaardiansyah.my.id/live/nova-app/terms-of-service
   title: Golang API
@@ -62,7 +251,7 @@ paths:
         name: login
         required: true
         schema:
-          $ref: '#/definitions/controllers.LoginRequest'
+          $ref: '#/definitions/internal_controllers.LoginRequest'
       produces:
       - application/json
       responses:
@@ -70,22 +259,336 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/utils.Response'
+            - $ref: '#/definitions/golang-api_pkg_utils.Response'
             - properties:
                 data:
-                  $ref: '#/definitions/controllers.LoginResponse'
+                  $ref: '#/definitions/internal_controllers.LoginResponse'
               type: object
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/golang-api_pkg_utils.Response'
         "422":
           description: Unprocessable Entity
           schema:
-            $ref: '#/definitions/utils.ValidationErrorResponse'
+            $ref: '#/definitions/golang-api_pkg_utils.ValidationErrorResponse'
       summary: Authenticate a user
       tags:
       - auth
+  /galleries:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of galleries
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: per_page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/golang-api_pkg_utils.PaginatedResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/internal_controllers.GallerySwagger'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/golang-api_pkg_utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: List galleries
+      tags:
+      - galleries
+  /notifications/settings:
+    put:
+      consumes:
+      - application/json
+      description: Update user notification allowance and Expo push token
+      parameters:
+      - description: Notification settings
+        in: body
+        name: settings
+        required: true
+        schema:
+          $ref: '#/definitions/internal_controllers.UpdateNotificationSettingsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/golang-api_pkg_utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/golang-api_pkg_utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/golang-api_pkg_utils.ValidationErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/golang-api_pkg_utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Update notification settings
+      tags:
+      - notifications
+  /payments:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of payments with optional filters
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: per_page
+        type: integer
+      - description: 'Type ID (1: Expense, 2: Income, 3: Transfer, 4: Withdrawal)'
+        in: query
+        name: type
+        type: integer
+      - description: Account ID
+        in: query
+        name: account_id
+        type: integer
+      - description: Start date (YYYY-MM-DD)
+        in: query
+        name: date_from
+        type: string
+      - description: End date (YYYY-MM-DD)
+        in: query
+        name: date_to
+        type: string
+      - description: Search query
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/golang-api_pkg_utils.PaginatedResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/internal_controllers.PaymentSwagger'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/golang-api_pkg_utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: List payments
+      tags:
+      - payments
+  /payments/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get detailed information about a specific payment
+      parameters:
+      - description: Payment ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/golang-api_pkg_utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_controllers.PaymentSwagger'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/golang-api_pkg_utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/golang-api_pkg_utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Get payment details
+      tags:
+      - payments
+  /payments/{id}/attachments:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of attachments for a specific payment
+      parameters:
+      - description: Payment ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/golang-api_pkg_utils.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/internal_controllers.AttachmentResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/golang-api_pkg_utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Get payment attachments
+      tags:
+      - payments
+  /payments/summary:
+    get:
+      consumes:
+      - application/json
+      description: Get summary of payments within a date range
+      parameters:
+      - description: Start date (YYYY-MM-DD)
+        in: query
+        name: startDate
+        type: string
+      - description: End date (YYYY-MM-DD)
+        in: query
+        name: endDate
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/golang-api_pkg_utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_controllers.SummaryResponse'
+              type: object
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/golang-api_pkg_utils.ValidationErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get payment summary
+      tags:
+      - payments
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of users
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 15
+        description: Items per page
+        in: query
+        name: per_page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/golang-api_pkg_utils.PaginatedResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/internal_controllers.UserSwagger'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/golang-api_pkg_utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: List users
+      tags:
+      - users
+  /users/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get detailed information about a specific user
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/golang-api_pkg_utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_controllers.UserSwagger'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/golang-api_pkg_utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/golang-api_pkg_utils.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Get user details
+      tags:
+      - users
 securityDefinitions:
   BearerAuth:
     in: header
