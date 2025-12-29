@@ -11,6 +11,8 @@ import (
 var (
 	WebURL    string
 	JWTSecret string
+	AppURL    string
+	AppPort   string
 
 	MailHost        string
 	MailPort        int
@@ -29,6 +31,12 @@ func LoadEnv() {
 
 	WebURL = os.Getenv("WEB_URL")
 	JWTSecret = os.Getenv("JWT_SECRET")
+	AppURL = os.Getenv("APP_URL")
+	AppPort = os.Getenv("APP_PORT")
+  
+	if AppPort == "" {
+		AppPort = "8080"
+	}
 
 	MailHost = os.Getenv("MAIL_HOST")
 	MailPort, _ = strconv.Atoi(os.Getenv("MAIL_PORT"))

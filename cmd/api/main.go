@@ -1,6 +1,8 @@
 package main
 
 import (
+	"golang-api/docs"
+	_ "golang-api/docs"
 	"golang-api/internal/config"
 	"golang-api/internal/middleware"
 	"golang-api/internal/routes"
@@ -10,6 +12,25 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 )
+
+// @title Golang API
+// @version 1.0
+// @description This is an official Golang API documentation for NovaApp.
+// @termsOfService https://novaardiansyah.my.id/live/nova-app/terms-of-service
+
+// @contact.name API Support
+// @contact.url https://novaardiansyah.my.id
+// @contact.email support@novadev.my.id
+
+// @license.name MIT
+// @license.url https://github.com/novaardiansyah/golang-api/blob/main/LICENSE
+
+// @host localhost:8080
+// @BasePath /api
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 
 func main() {
 	config.LoadEnv()
@@ -36,15 +57,16 @@ func main() {
 
 	routes.SetupRoutes(app)
 
-	port := os.Getenv("APP_PORT")
-	if port == "" {
-		port = "8080"
+	if config.AppURL != "" {
+		docs.SwaggerInfo.Host = config.AppURL
+	} else {
+		docs.SwaggerInfo.Host = "localhost:" + config.AppPort
 	}
 
-	addr := ":" + port
-  
+	addr := ":" + config.AppPort
+
 	if os.Getenv("APP_ENV") == "production" {
-		addr = "127.0.0.1:" + port
+		addr = "127.0.0.1:" + config.AppPort
 	}
 
 	log.Printf("Server starting on %s...\n", addr)

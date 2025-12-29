@@ -8,6 +8,7 @@ import (
 	"golang-api/pkg/utils"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/swagger"
 )
 
 func SetupRoutes(app *fiber.App) {
@@ -18,6 +19,8 @@ func SetupRoutes(app *fiber.App) {
 	authController := controllers.NewAuthController(*userRepo)
 
 	api := app.Group("/api")
+
+	api.Get("/documentation/*", swagger.HandlerDefault)
 
 	api.Get("/health", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{

@@ -30,6 +30,10 @@ clean:
 install-air:
 	go install github.com/air-verse/air@latest
 
+# Generate Swagger documentation
+swagger:
+	swag init -g cmd/api/main.go
+
 # Show help
 help:
 	@echo "Available commands:"
@@ -37,6 +41,7 @@ help:
 	@echo "  make build       - Build the application (Windows)"
 	@echo "  make build-linux - Build for Linux production"
 	@echo "  make dev         - Run with hot reload (requires air)"
+	@echo "  make swagger     - Generate Swagger documentation"
 	@echo "  make install     - Install dependencies"
 	@echo "  make install-air - Install air for hot reload"
 	@echo "  make clean       - Clean build artifacts"
