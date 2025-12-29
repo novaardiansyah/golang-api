@@ -9,6 +9,8 @@ import (
 	"log"
 	"os"
 
+	"strings"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 )
@@ -58,7 +60,10 @@ func main() {
 	routes.SetupRoutes(app)
 
 	if config.AppURL != "" {
-		docs.SwaggerInfo.Host = config.AppURL
+		host := config.AppURL
+		host = strings.Replace(host, "http://", "", 1)
+		host = strings.Replace(host, "https://", "", 1)
+		docs.SwaggerInfo.Host = host
 	} else {
 		docs.SwaggerInfo.Host = "localhost:" + config.AppPort
 	}
