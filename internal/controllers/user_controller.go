@@ -27,7 +27,7 @@ func NewUserController(repo *repositories.UserRepository) *UserController {
 // @Success 200 {object} utils.PaginatedResponse{data=[]UserSwagger}
 // @Failure 500 {object} utils.Response
 // @Router /users [get]
-// @Security ApiKeyAuth
+// @Security BearerAuth
 func (ctrl *UserController) Index(c *fiber.Ctx) error {
 	page, _ := strconv.Atoi(c.Query("page", "1"))
 	perPage, _ := strconv.Atoi(c.Query("per_page", "15"))
@@ -63,7 +63,7 @@ func (ctrl *UserController) Index(c *fiber.Ctx) error {
 // @Failure 400 {object} utils.Response
 // @Failure 404 {object} utils.Response
 // @Router /users/{id} [get]
-// @Security ApiKeyAuth
+// @Security BearerAuth
 func (ctrl *UserController) Show(c *fiber.Ctx) error {
 	id, err := strconv.ParseUint(c.Params("id"), 10, 32)
 	if err != nil {

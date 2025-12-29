@@ -33,7 +33,7 @@ func NewNotificationController() *NotificationController {
 // @Failure 422 {object} utils.ValidationErrorResponse
 // @Failure 500 {object} utils.Response
 // @Router /notifications/settings [put]
-// @Security ApiKeyAuth
+// @Security BearerAuth
 func (ctrl *NotificationController) UpdateSettings(c *fiber.Ctx) error {
 	data := make(map[string]interface{})
 

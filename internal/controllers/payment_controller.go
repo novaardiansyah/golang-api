@@ -88,7 +88,7 @@ func NewPaymentController(repo *repositories.PaymentRepository) *PaymentControll
 // @Success 200 {object} utils.PaginatedResponse{data=[]PaymentSwagger}
 // @Failure 400 {object} utils.Response
 // @Router /payments [get]
-// @Security ApiKeyAuth
+// @Security BearerAuth
 func (ctrl *PaymentController) Index(c *fiber.Ctx) error {
 	page, _ := strconv.Atoi(c.Query("page", "1"))
 	perPage, _ := strconv.Atoi(c.Query("per_page", "10"))
@@ -137,7 +137,7 @@ func (ctrl *PaymentController) Index(c *fiber.Ctx) error {
 // @Failure 400 {object} utils.Response
 // @Failure 404 {object} utils.Response
 // @Router /payments/{id} [get]
-// @Security ApiKeyAuth
+// @Security BearerAuth
 func (ctrl *PaymentController) Show(c *fiber.Ctx) error {
 	paymentID, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
@@ -163,7 +163,7 @@ func (ctrl *PaymentController) Show(c *fiber.Ctx) error {
 // @Success 200 {object} utils.Response{data=SummaryResponse}
 // @Failure 422 {object} utils.ValidationErrorResponse
 // @Router /payments/summary [get]
-// @Security ApiKeyAuth
+// @Security BearerAuth
 func (ctrl *PaymentController) Summary(c *fiber.Ctx) error {
 	data := make(map[string]interface{})
 
@@ -269,7 +269,7 @@ func (ctrl *PaymentController) Summary(c *fiber.Ctx) error {
 // @Success 200 {object} utils.Response{data=[]AttachmentResponse}
 // @Failure 400 {object} utils.Response
 // @Router /payments/{id}/attachments [get]
-// @Security ApiKeyAuth
+// @Security BearerAuth
 func (ctrl *PaymentController) GetAttachments(c *fiber.Ctx) error {
 	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {

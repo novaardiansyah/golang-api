@@ -27,7 +27,7 @@ func NewGalleryController(repo *repositories.GalleryRepository) *GalleryControll
 // @Success 200 {object} utils.PaginatedResponse{data=[]GallerySwagger}
 // @Failure 400 {object} utils.Response
 // @Router /galleries [get]
-// @Security ApiKeyAuth
+// @Security BearerAuth
 func (ctrl *GalleryController) Index(c *fiber.Ctx) error {
 	page, _ := strconv.Atoi(c.Query("page", "1"))
 	perPage, _ := strconv.Atoi(c.Query("per_page", "10"))
