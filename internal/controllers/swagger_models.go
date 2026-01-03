@@ -41,3 +41,11 @@ type PaymentSwagger struct {
 	Account            *AccountInfoSwagger `json:"account"`
 	AccountTo          *AccountInfoSwagger `json:"account_to"`
 }
+
+type EmailAttachmentSwagger struct {
+	ID          uint   `json:"id"`
+	Code        string `json:"code"`
+	FileName    string `json:"file_name"`
+	FileSize    string `json:"file_size"`
+	DownloadURL string `json:"download_url"`
+}

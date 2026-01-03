@@ -68,6 +68,12 @@ func SetupRoutes(app *fiber.App) {
 	payments.Get("/:id", paymentController.Show)
 	payments.Get("/:id/attachments", paymentController.GetAttachments)
 
+	emailRepo := repositories.NewEmailRepository(db)
+	emailController := controllers.NewEmailController(emailRepo)
+
+	emails := api.Group("/emails", middleware.Auth())
+	emails.Get("/:uid/attachments", emailController.GetAttachments)
+
 	notificationController := controllers.NewNotificationController()
 
 	notifications := api.Group("/notifications", middleware.Auth())

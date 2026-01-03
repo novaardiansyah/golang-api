@@ -70,6 +70,19 @@ definitions:
       url:
         type: string
     type: object
+  internal_controllers.EmailAttachmentSwagger:
+    properties:
+      code:
+        type: string
+      download_url:
+        type: string
+      file_name:
+        type: string
+      file_size:
+        type: string
+      id:
+        type: integer
+    type: object
   internal_controllers.LoginRequest:
     properties:
       email:
@@ -254,6 +267,44 @@ paths:
       summary: Authenticate a user
       tags:
       - auth
+  /emails/{uid}/attachments:
+    get:
+      consumes:
+      - application/json
+      description: Get list of attachments for a specific email by UID
+      parameters:
+      - description: Email UID
+        in: path
+        name: uid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/golang-api_pkg_utils.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/internal_controllers.EmailAttachmentSwagger'
+                  type: array
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/golang-api_pkg_utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/golang-api_pkg_utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Get email attachments
+      tags:
+      - emails
   /notifications/settings:
     put:
       consumes:
