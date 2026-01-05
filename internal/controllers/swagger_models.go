@@ -42,7 +42,7 @@ type PaymentSwagger struct {
 	AccountTo          *AccountInfoSwagger `json:"account_to"`
 }
 
-type EmailAttachmentSwagger struct {
+type FileSwagger struct {
 	ID          uint   `json:"id"`
 	Code        string `json:"code"`
 	FileName    string `json:"file_name"`

@@ -70,7 +70,7 @@ definitions:
       url:
         type: string
     type: object
-  internal_controllers.EmailAttachmentSwagger:
+  internal_controllers.FileSwagger:
     properties:
       code:
         type: string
@@ -267,13 +267,13 @@ paths:
       summary: Authenticate a user
       tags:
       - auth
-  /emails/{uid}/attachments:
+  /files/d/{uid}:
     get:
       consumes:
       - application/json
-      description: Get list of attachments for a specific email by UID
+      description: Get list of files for a specific file download by UID
       parameters:
-      - description: Email UID
+      - description: File Download UID
         in: path
         name: uid
         required: true
@@ -289,22 +289,18 @@ paths:
             - properties:
                 data:
                   items:
-                    $ref: '#/definitions/internal_controllers.EmailAttachmentSwagger'
+                    $ref: '#/definitions/internal_controllers.FileSwagger'
                   type: array
               type: object
         "404":
           description: Not Found
           schema:
             $ref: '#/definitions/golang-api_pkg_utils.Response'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/golang-api_pkg_utils.Response'
       security:
       - BearerAuth: []
-      summary: Get email attachments
+      summary: Get files by file download UID
       tags:
-      - emails
+      - files
   /notifications/settings:
     put:
       consumes:

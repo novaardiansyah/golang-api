@@ -82,14 +82,14 @@ const docTemplate = `{
                 }
             }
         },
-        "/emails/{uid}/attachments": {
+        "/files/d/{uid}": {
             "get": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "Get list of attachments for a specific email by UID",
+                "description": "Get list of files for a specific file download by UID",
                 "consumes": [
                     "application/json"
                 ],
@@ -97,13 +97,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "emails"
+                    "files"
                 ],
-                "summary": "Get email attachments",
+                "summary": "Get files by file download UID",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Email UID",
+                        "description": "File Download UID",
                         "name": "uid",
                         "in": "path",
                         "required": true
@@ -123,7 +123,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/internal_controllers.EmailAttachmentSwagger"
+                                                "$ref": "#/definitions/internal_controllers.FileSwagger"
                                             }
                                         }
                                     }
@@ -133,12 +133,6 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/golang-api_pkg_utils.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/golang-api_pkg_utils.Response"
                         }
@@ -712,7 +706,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_controllers.EmailAttachmentSwagger": {
+        "internal_controllers.FileSwagger": {
             "type": "object",
             "properties": {
                 "code": {

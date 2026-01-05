@@ -23,6 +23,17 @@ type FileResponse struct {
 	DownloadURL string `json:"download_url"`
 }
 
+// GetFiles godoc
+// @Summary Get files by file download UID
+// @Description Get list of files for a specific file download by UID
+// @Tags files
+// @Accept json
+// @Produce json
+// @Param uid path string true "File Download UID"
+// @Success 200 {object} utils.Response{data=[]FileSwagger}
+// @Failure 404 {object} utils.Response
+// @Router /files/d/{uid} [get]
+// @Security BearerAuth
 func (ctrl *FileDownloadController) GetFiles(c *fiber.Ctx) error {
 	uid := c.Params("uid")
 
