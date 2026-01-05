@@ -66,16 +66,15 @@ func SetupRoutes(app *fiber.App) {
 	payments.Get("/", paymentController.Index)
 	payments.Get("/summary", paymentController.Summary)
 	payments.Get("/:id", paymentController.Show)
-	payments.Get("/:id/attachments", paymentController.GetAttachments)
-
-	emailRepo := repositories.NewEmailRepository(db)
-	emailController := controllers.NewEmailController(emailRepo)
-
-	emails := api.Group("/emails", middleware.Auth())
-	emails.Get("/:uid/attachments", emailController.GetAttachments)
 
 	notificationController := controllers.NewNotificationController()
 
 	notifications := api.Group("/notifications", middleware.Auth())
 	notifications.Put("/settings", notificationController.UpdateSettings)
+
+	fileDownloadRepo := repositories.NewFileDownloadRepository(db)
+	fileDownloadController := controllers.NewFileDownloadController(fileDownloadRepo)
+
+	files := api.Group("/files/d", middleware.Auth())
+	files.Get("/:uid", fileDownloadController.GetFiles)
 }

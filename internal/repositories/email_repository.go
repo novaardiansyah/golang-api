@@ -16,7 +16,7 @@ func NewEmailRepository(db *gorm.DB) *EmailRepository {
 
 func (r *EmailRepository) GetByUID(uid string) (*models.Email, error) {
 	var email models.Email
-	err := r.db.Preload("Files").Where("uid = ?", uid).First(&email).Error
+	err := r.db.Where("uid = ?", uid).First(&email).Error
 	if err != nil {
 		return nil, err
 	}

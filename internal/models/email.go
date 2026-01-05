@@ -15,7 +15,6 @@ type Email struct {
 	Message         string         `gorm:"type:text" json:"message"`
 	Status          string         `gorm:"size:50" json:"status"`
 	IsURLAttachment *bool          `gorm:"default:false" json:"is_url_attachment"`
-	Files           []File         `gorm:"polymorphic:Subject;polymorphicValue:App\\Models\\Email" json:"files,omitempty"`
 	CreatedAt       time.Time      `json:"created_at"`
 	UpdatedAt       time.Time      `json:"updated_at"`
 	DeletedAt       gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty" swaggertype:"string"`
