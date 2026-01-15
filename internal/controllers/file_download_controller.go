@@ -21,6 +21,7 @@ type FileResponse struct {
 	FileName    string `json:"file_name"`
 	FileSize    string `json:"file_size"`
 	DownloadURL string `json:"download_url"`
+	FileAlias   string `json:"file_alias"`
 }
 
 // GetFiles godoc
@@ -50,6 +51,7 @@ func (ctrl *FileDownloadController) GetFiles(c *fiber.Ctx) error {
 			FileName:    file.FileName,
 			FileSize:    utils.FormatFileSize(file.FileSize),
 			DownloadURL: file.DownloadURL,
+			FileAlias:   file.FileAlias,
 		})
 	}
 

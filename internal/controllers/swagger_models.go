@@ -47,5 +47,6 @@ type FileSwagger struct {
 	Code        string `json:"code"`
 	FileName    string `json:"file_name"`
 	FileSize    string `json:"file_size"`
+	FileAlias   string `json:"file_alias"`
 	DownloadURL string `json:"download_url"`
 }

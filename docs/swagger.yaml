@@ -76,6 +76,8 @@ definitions:
         type: string
       download_url:
         type: string
+      file_alias:
+        type: string
       file_name:
         type: string
       file_size:
@@ -221,14 +223,14 @@ definitions:
 host: localhost:8080
 info:
   contact:
-    email: support@novadev.my.id
+    email: support@novaardiansyah.id
     name: API Support
-    url: https://novaardiansyah.my.id
+    url: https://novaardiansyah.id
   description: This is an official Golang API documentation for NovaApp.
   license:
     name: MIT License
     url: https://github.com/novaardiansyah/golang-api/blob/main/LICENSE
-  termsOfService: https://novaardiansyah.my.id/live/nova-app/terms-of-service
+  termsOfService: https://novaardiansyah.id/live/nova-app/terms-of-service
   title: Golang API
   version: "1.0"
 paths:

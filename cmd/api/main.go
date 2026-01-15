@@ -18,11 +18,11 @@ import (
 // @title Golang API
 // @version 1.0
 // @description This is an official Golang API documentation for NovaApp.
-// @termsOfService https://novaardiansyah.my.id/live/nova-app/terms-of-service
+// @termsOfService https://novaardiansyah.id/live/nova-app/terms-of-service
 
 // @contact.name API Support
-// @contact.url https://novaardiansyah.my.id
-// @contact.email support@novadev.my.id
+// @contact.url https://novaardiansyah.id
+// @contact.email support@novaardiansyah.id
 
 // @license.name MIT License
 // @license.url https://github.com/novaardiansyah/golang-api/blob/main/LICENSE

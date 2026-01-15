@@ -15,6 +15,7 @@ type File struct {
 	FilePath              string         `gorm:"size:500;not null" json:"file_path"`
 	FileSize              int64          `gorm:"not null" json:"file_size"`
 	DownloadURL           string         `gorm:"size:500" json:"download_url"`
+	FileAlias             string         `gorm:"size:255" json:"file_alias"`
 	ScheduledDeletionTime *time.Time     `json:"scheduled_deletion_time,omitempty"`
 	HasBeenDeleted        *bool          `gorm:"default:false" json:"has_been_deleted"`
 	SubjectType           string         `gorm:"size:100;index:idx_subject" json:"subject_type"`

@@ -9,11 +9,11 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "termsOfService": "https://novaardiansyah.my.id/live/nova-app/terms-of-service",
+        "termsOfService": "https://novaardiansyah.id/live/nova-app/terms-of-service",
         "contact": {
             "name": "API Support",
-            "url": "https://novaardiansyah.my.id",
-            "email": "support@novadev.my.id"
+            "url": "https://novaardiansyah.id",
+            "email": "support@novaardiansyah.id"
         },
         "license": {
             "name": "MIT License",
@@ -713,6 +713,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "download_url": {
+                    "type": "string"
+                },
+                "file_alias": {
                     "type": "string"
                 },
                 "file_name": {
