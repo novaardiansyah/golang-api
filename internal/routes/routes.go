@@ -83,5 +83,6 @@ func SetupRoutes(app *fiber.App) {
 
 	paymentGoals := api.Group("/payment-goals", middleware.Auth())
 	paymentGoals.Get("/", paymentGoalController.Index)
+	paymentGoals.Get("/overview", paymentGoalController.Overview)
 	paymentGoals.Get("/:id", paymentGoalController.Show)
 }

@@ -12,6 +12,12 @@ type PaymentGoalStatus struct {
 	Name string `json:"name"`
 }
 
+const (
+	PaymentGoalStatusOngoing   = 1
+	PaymentGoalStatusOverdue   = 2
+	PaymentGoalStatusCompleted = 3
+)
+
 func (PaymentGoalStatus) TableName() string {
 	return "payment_goal_statuses"
 }

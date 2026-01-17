@@ -36,3 +36,23 @@ func (r *PaymentGoalRepository) FindByID(id int, userID uint) (*models.PaymentGo
 
 	return &goal, err
 }
+
+func (r *PaymentGoalRepository) GetOverview(userID uint) (int64, int64, error) {
+	var totalGoals int64
+	var completedGoals int64
+
+	err := r.db.Model(&models.PaymentGoal{}).
+		Where("user_id = ?", userID).
+		Count(&totalGoals).Error
+
+	if err != nil {
+		return 0, 0, err
+	}
+
+	err = r.db.Model(&models.PaymentGoal{}).
+		Where("user_id = ?", userID).
+		Where("status_id = ?", models.PaymentGoalStatusCompleted).
+		Count(&completedGoals).Error
+
+	return totalGoals, completedGoals, err
+}

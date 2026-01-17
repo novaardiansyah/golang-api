@@ -50,3 +50,29 @@ type FileSwagger struct {
 	FileAlias   string `json:"file_alias"`
 	DownloadURL string `json:"download_url"`
 }
+
+type FormattedGoalSwagger struct {
+	Amount       string `json:"amount"`
+	TargetAmount string `json:"target_amount"`
+	Progress     string `json:"progress"`
+	StartDate    string `json:"start_date"`
+	TargetDate   string `json:"target_date"`
+}
+
+type PaymentGoalSwagger struct {
+	ID              uint                 `json:"id"`
+	UserID          uint                 `json:"user_id"`
+	StatusID        uint                 `json:"status_id"`
+	Code            string               `json:"code"`
+	Name            string               `json:"name"`
+	Description     *string              `json:"description"`
+	Amount          int64                `json:"amount"`
+	TargetAmount    int64                `json:"target_amount"`
+	ProgressPercent int                  `json:"progress_percent"`
+	StartDate       string               `json:"start_date"`
+	TargetDate      string               `json:"target_date"`
+	CreatedAt       time.Time            `json:"created_at"`
+	UpdatedAt       time.Time            `json:"updated_at"`
+	Status          string               `json:"status"`
+	Formatted       FormattedGoalSwagger `json:"formatted"`
+}
