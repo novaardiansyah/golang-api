@@ -77,4 +77,11 @@ func SetupRoutes(app *fiber.App) {
 
 	files := api.Group("/files/d", middleware.Auth())
 	files.Get("/:uid", fileDownloadController.GetFiles)
+
+	paymentGoalRepo := repositories.NewPaymentGoalRepository(db)
+	paymentGoalController := controllers.NewPaymentGoalController(paymentGoalRepo)
+
+	paymentGoals := api.Group("/payment-goals", middleware.Auth())
+	paymentGoals.Get("/", paymentGoalController.Index)
+	paymentGoals.Get("/:id", paymentGoalController.Show)
 }

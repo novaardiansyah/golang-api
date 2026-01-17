@@ -68,3 +68,7 @@ func maskNumbers(s string) string {
 	}
 	return string(result)
 }
+
+func FormatPercent(value int) string {
+	return fmt.Sprintf("%d%%", value)
+}
