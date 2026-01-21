@@ -9,6 +9,7 @@ import (
 	"golang-api/internal/models"
 	"golang-api/internal/repositories"
 	"golang-api/pkg/utils"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -94,6 +95,75 @@ func (ctrl *AuthController) Login(c *fiber.Ctx) error {
 
 	return utils.SuccessResponse(c, "Login successful", LoginResponse{
 		Token: fullToken,
+	})
+}
+
+type ValidateTokenUserResponse struct {
+	ID   uint   `json:"id"`
+	Code string `json:"code"`
+	Name string `json:"name"`
+}
+
+type ValidateTokenResponse struct {
+	User ValidateTokenUserResponse `json:"user"`
+}
+
+// ValidateToken godoc
+// @Summary Validate authentication token
+// @Description Validate the personal access token and return user information
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} utils.Response{data=ValidateTokenResponse}
+// @Failure 401 {object} utils.Response
+// @Router /auth/validate-token [get]
+func (ctrl *AuthController) ValidateToken(c *fiber.Ctx) error {
+	authHeader := c.Get("Authorization")
+
+	if authHeader == "" {
+		return utils.ErrorResponse(c, fiber.StatusUnauthorized, "No token provided")
+	}
+
+	tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+	if tokenString == authHeader {
+		return utils.ErrorResponse(c, fiber.StatusUnauthorized, "Invalid token format")
+	}
+
+	parts := strings.SplitN(tokenString, "|", 2)
+	if len(parts) != 2 {
+		return utils.ErrorResponse(c, fiber.StatusUnauthorized, "Invalid token format")
+	}
+
+	tokenID := parts[0]
+	plainTextToken := parts[1]
+
+	hash := sha256.Sum256([]byte(plainTextToken))
+	hashedToken := hex.EncodeToString(hash[:])
+
+	db := config.GetDB()
+	var token models.PersonalAccessToken
+
+	result := db.Where("id = ? AND token = ?", tokenID, hashedToken).First(&token)
+	if result.Error != nil {
+		return utils.ErrorResponse(c, fiber.StatusUnauthorized, "Invalid token")
+	}
+
+	if token.ExpiresAt != nil && token.ExpiresAt.Before(time.Now()) {
+		return utils.ErrorResponse(c, fiber.StatusUnauthorized, "Token expired")
+	}
+
+	user, err := ctrl.userRepo.FindByID(token.TokenableID)
+	if err != nil {
+		return utils.ErrorResponse(c, fiber.StatusUnauthorized, "User not found")
+	}
+
+	return utils.SuccessResponse(c, "Token is valid", ValidateTokenResponse{
+		User: ValidateTokenUserResponse{
+			ID:   user.ID,
+			Code: user.Code,
+			Name: user.Name,
+		},
 	})
 }
 

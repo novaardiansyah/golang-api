@@ -275,6 +275,20 @@ definitions:
       updated_at:
         type: string
     type: object
+  internal_controllers.ValidateTokenResponse:
+    properties:
+      user:
+        $ref: '#/definitions/internal_controllers.ValidateTokenUserResponse'
+    type: object
+  internal_controllers.ValidateTokenUserResponse:
+    properties:
+      code:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact:
@@ -322,6 +336,32 @@ paths:
           schema:
             $ref: '#/definitions/golang-api_pkg_utils.ValidationErrorResponse'
       summary: Authenticate a user
+      tags:
+      - auth
+  /auth/validate-token:
+    get:
+      consumes:
+      - application/json
+      description: Validate the personal access token and return user information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/golang-api_pkg_utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_controllers.ValidateTokenResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/golang-api_pkg_utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Validate authentication token
       tags:
       - auth
   /files/d/{uid}:
