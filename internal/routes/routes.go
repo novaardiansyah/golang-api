@@ -1,3 +1,15 @@
+/*
+ * Project Name: routes
+ * File: routes.go
+ * Created Date: Saturday December 27th 2025
+ *
+ * Author: Nova Ardiansyah admin@novaardiansyah.id
+ * Website: https://novaardiansyah.id
+ * MIT License: https://github.com/novaardiansyah/golang-api/blob/main/LICENSE
+ *
+ * Copyright (c) 2025-2026 Nova Ardiansyah, Org
+ */
+
 package routes
 
 import (
@@ -55,7 +67,7 @@ func SetupRoutes(app *fiber.App) {
 
 	auth := api.Group("/auth")
 	auth.Use(middleware.AuthLimiter())
-  
+
 	auth.Post("/login", authController.Login)
 	auth.Get("/validate-token", authController.ValidateToken)
 
@@ -89,4 +101,10 @@ func SetupRoutes(app *fiber.App) {
 	paymentGoals.Get("/", paymentGoalController.Index)
 	paymentGoals.Get("/overview", paymentGoalController.Overview)
 	paymentGoals.Get("/:id", paymentGoalController.Show)
+
+	paymentAccountRepo := repositories.NewPaymentAccountRepository(db)
+	paymentAccountController := controllers.NewPaymentAccountController(paymentAccountRepo)
+
+	paymentAccounts := api.Group("/payment-accounts", middleware.Auth())
+	paymentAccounts.Get("/", paymentAccountController.Index)
 }

@@ -76,3 +76,16 @@ type PaymentGoalSwagger struct {
 	Status          string               `json:"status"`
 	Formatted       FormattedGoalSwagger `json:"formatted"`
 }
+
+type FormattedAccountSwagger struct {
+	Deposit string `json:"deposit"`
+	Logo    string `json:"logo"`
+}
+
+type PaymentAccountSwagger struct {
+	ID        uint                    `json:"id"`
+	Name      string                  `json:"name"`
+	Deposit   int64                   `json:"deposit"`
+	Logo      string                  `json:"logo"`
+	Formatted FormattedAccountSwagger `json:"formatted"`
+}

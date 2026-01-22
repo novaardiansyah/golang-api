@@ -12,6 +12,7 @@ var (
 	AppURL    string
 	AppPort   string
   CdnUrl    string
+  MainUrl   string
 
 	MailHost        string
 	MailPort        int
@@ -31,6 +32,7 @@ func LoadEnv() {
 	AppURL = os.Getenv("APP_URL")
 	AppPort = os.Getenv("APP_PORT")
   CdnUrl = os.Getenv("CDN_URL")
+  MainUrl = os.Getenv("MAIN_URL")
   
 	if AppPort == "" {
 		AppPort = "8080"

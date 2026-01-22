@@ -243,6 +243,71 @@ const docTemplate = `{
                 }
             }
         },
+        "/payment-accounts": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a paginated list of payment accounts",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "payment_accounts"
+                ],
+                "summary": "List payment accounts",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Items per page",
+                        "name": "per_page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/golang-api_pkg_utils.PaginatedResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/internal_controllers.PaymentAccountSwagger"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/golang-api_pkg_utils.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/payment-goals": {
             "get": {
                 "security": [
@@ -931,6 +996,17 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_controllers.FormattedAccountSwagger": {
+            "type": "object",
+            "properties": {
+                "deposit": {
+                    "type": "string"
+                },
+                "logo": {
+                    "type": "string"
+                }
+            }
+        },
         "internal_controllers.FormattedGoalSwagger": {
             "type": "object",
             "properties": {
@@ -997,6 +1073,26 @@ const docTemplate = `{
                 },
                 "total_goals": {
                     "type": "integer"
+                }
+            }
+        },
+        "internal_controllers.PaymentAccountSwagger": {
+            "type": "object",
+            "properties": {
+                "deposit": {
+                    "type": "integer"
+                },
+                "formatted": {
+                    "$ref": "#/definitions/internal_controllers.FormattedAccountSwagger"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "logo": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
                 }
             }
         },

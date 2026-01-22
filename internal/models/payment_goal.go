@@ -1,3 +1,15 @@
+/*
+ * Project Name: models
+ * File: payment_goal.go
+ * Created Date: Saturday January 17th 2026
+ * 
+ * Author: Nova Ardiansyah admin@novaardiansyah.id
+ * Website: https://novaardiansyah.id
+ * MIT License: https://github.com/novaardiansyah/golang-api/blob/main/LICENSE
+ * 
+ * Copyright (c) 2025-2026 Nova Ardiansyah, Org
+ */
+
 package models
 
 import (

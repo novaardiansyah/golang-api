@@ -85,6 +85,13 @@ definitions:
       id:
         type: integer
     type: object
+  internal_controllers.FormattedAccountSwagger:
+    properties:
+      deposit:
+        type: string
+      logo:
+        type: string
+    type: object
   internal_controllers.FormattedGoalSwagger:
     properties:
       amount:
@@ -129,6 +136,19 @@ definitions:
         type: string
       total_goals:
         type: integer
+    type: object
+  internal_controllers.PaymentAccountSwagger:
+    properties:
+      deposit:
+        type: integer
+      formatted:
+        $ref: '#/definitions/internal_controllers.FormattedAccountSwagger'
+      id:
+        type: integer
+      logo:
+        type: string
+      name:
+        type: string
     type: object
   internal_controllers.PaymentGoalSwagger:
     properties:
@@ -434,6 +454,45 @@ paths:
       summary: Update notification settings
       tags:
       - notifications
+  /payment-accounts:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of payment accounts
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: per_page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/golang-api_pkg_utils.PaginatedResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/internal_controllers.PaymentAccountSwagger'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/golang-api_pkg_utils.Response'
+      security:
+      - BearerAuth: []
+      summary: List payment accounts
+      tags:
+      - payment_accounts
   /payment-goals:
     get:
       consumes:

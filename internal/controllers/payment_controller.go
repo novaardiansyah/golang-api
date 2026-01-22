@@ -1,3 +1,15 @@
+/*
+ * Project Name: controllers
+ * File: payment_controller.go
+ * Created Date: Saturday December 27th 2025
+ * 
+ * Author: Nova Ardiansyah admin@novaardiansyah.id
+ * Website: https://novaardiansyah.id
+ * MIT License: https://github.com/novaardiansyah/golang-api/blob/main/LICENSE
+ * 
+ * Copyright (c) 2025-2026 Nova Ardiansyah, Org
+ */
+
 package controllers
 
 import (
