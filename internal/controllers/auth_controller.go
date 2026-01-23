@@ -1,3 +1,15 @@
+/*
+ * Project Name: controllers
+ * File: auth_controller.go
+ * Created Date: Sunday December 28th 2025
+ * 
+ * Author: Nova Ardiansyah admin@novaardiansyah.id
+ * Website: https://novaardiansyah.id
+ * MIT License: https://github.com/novaardiansyah/golang-api/blob/main/LICENSE
+ * 
+ * Copyright (c) 2026 Nova Ardiansyah, Org
+ */
+
 package controllers
 
 import (
@@ -46,7 +58,7 @@ type LoginResponse struct {
 // @Produce json
 // @Param login body LoginRequest true "Login credentials"
 // @Success 200 {object} utils.Response{data=LoginResponse}
-// @Failure 401 {object} utils.Response
+// @Failure 401 {object} utils.UnauthorizedResponse
 // @Failure 422 {object} utils.ValidationErrorResponse
 // @Router /auth/login [post]
 func (ctrl *AuthController) Login(c *fiber.Ctx) error {
@@ -102,11 +114,21 @@ func (ctrl *AuthController) Login(c *fiber.Ctx) error {
 	})
 }
 
+// Logout godoc
+// @Summary Logout user
+// @Description Logout user and revoke current access token
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} utils.SimpleResponse
+// @Failure 401 {object} utils.UnauthorizedResponse
+// @Router /auth/logout [post]
 func (ctrl *AuthController) Logout(c *fiber.Ctx) error {
 	token := c.Locals("token").(models.PersonalAccessToken)
 	ctrl.TokenRepo.Delete(&token)
 
-	return utils.SuccessResponse(c, "Logout successful. Current access token has been revoked.", nil)
+	return utils.SimpleSuccessResponse(c, "Logout successful. Current access token has been revoked.")
 }
 
 type ValidateTokenUserResponse struct {
@@ -127,7 +149,7 @@ type ValidateTokenResponse struct {
 // @Produce json
 // @Security BearerAuth
 // @Success 200 {object} utils.Response{data=ValidateTokenResponse}
-// @Failure 401 {object} utils.Response
+// @Failure 401 {object} utils.UnauthorizedResponse
 // @Router /auth/validate-token [get]
 func (ctrl *AuthController) ValidateToken(c *fiber.Ctx) error {
 	user := c.Locals("user").(models.User)

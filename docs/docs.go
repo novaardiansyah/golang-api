@@ -70,13 +70,47 @@ const docTemplate = `{
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/golang-api_pkg_utils.Response"
+                            "$ref": "#/definitions/golang-api_pkg_utils.UnauthorizedResponse"
                         }
                     },
                     "422": {
                         "description": "Unprocessable Entity",
                         "schema": {
                             "$ref": "#/definitions/golang-api_pkg_utils.ValidationErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/logout": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Logout user and revoke current access token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Logout user",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/golang-api_pkg_utils.SimpleResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/golang-api_pkg_utils.UnauthorizedResponse"
                         }
                     }
                 }
@@ -122,7 +156,7 @@ const docTemplate = `{
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/golang-api_pkg_utils.Response"
+                            "$ref": "#/definitions/golang-api_pkg_utils.UnauthorizedResponse"
                         }
                     }
                 }
@@ -900,7 +934,8 @@ const docTemplate = `{
                     "$ref": "#/definitions/golang-api_pkg_utils.Meta"
                 },
                 "success": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "default": true
                 }
             }
         },
@@ -913,6 +948,31 @@ const docTemplate = `{
                 },
                 "success": {
                     "type": "boolean"
+                }
+            }
+        },
+        "golang-api_pkg_utils.SimpleResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean",
+                    "default": true
+                }
+            }
+        },
+        "golang-api_pkg_utils.UnauthorizedResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "default": "Unauthorized: reason.."
+                },
+                "success": {
+                    "type": "boolean",
+                    "default": false
                 }
             }
         },
@@ -932,7 +992,8 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "success": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "default": false
                 }
             }
         },

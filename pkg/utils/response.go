@@ -10,14 +10,29 @@ type Response struct {
 	Data    interface{} `json:"data,omitempty"`
 }
 
+type SimpleResponse struct {
+	Success bool `json:"success" default:"true"`
+	Message string `json:"message"`
+}
+
 type ValidationErrorResponse struct {
-	Success bool                `json:"success"`
+	Success bool                `json:"success" default:"false"`
 	Message string              `json:"message"`
 	Errors  map[string][]string `json:"errors"`
 }
 
+type SimpleErrorResponse struct {
+	Success bool   `json:"success" default:"false"`
+	Message string `json:"message"`
+}
+
+type UnauthorizedResponse struct {
+	Success bool   `json:"success" default:"false"`
+	Message string `json:"message" default:"Unauthorized: reason..."`
+}
+
 type PaginatedResponse struct {
-	Success bool        `json:"success"`
+	Success bool        `json:"success" default:"true"`
 	Message string      `json:"message"`
 	Data    interface{} `json:"data"`
 	Meta    Meta        `json:"meta"`
@@ -40,6 +55,13 @@ func SuccessResponse(c *fiber.Ctx, message string, data interface{}) error {
 	})
 }
 
+func SimpleSuccessResponse(c *fiber.Ctx, message string) error {
+	return c.Status(fiber.StatusOK).JSON(SimpleResponse{
+		Success: true,
+		Message: message,
+	})
+}
+
 func CreatedResponse(c *fiber.Ctx, message string, data interface{}) error {
 	return c.Status(fiber.StatusCreated).JSON(Response{
 		Success: true,
@@ -49,7 +71,7 @@ func CreatedResponse(c *fiber.Ctx, message string, data interface{}) error {
 }
 
 func ErrorResponse(c *fiber.Ctx, statusCode int, message string) error {
-	return c.Status(statusCode).JSON(Response{
+	return c.Status(statusCode).JSON(SimpleErrorResponse{
 		Success: false,
 		Message: message,
 	})
