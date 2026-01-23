@@ -10,8 +10,8 @@ type PersonalAccessTokenRepository struct {
   db *gorm.DB
 }
 
-func NewPersonalAccessTokenRepository(db *gorm.DB) PersonalAccessTokenRepository {
-  return PersonalAccessTokenRepository{db: db}
+func NewPersonalAccessTokenRepository(db *gorm.DB) *PersonalAccessTokenRepository {
+  return &PersonalAccessTokenRepository{db: db}
 }
 
 func (repo PersonalAccessTokenRepository) FindByIDAndHashedToken(id uint64, hashedToken string) (*models.PersonalAccessToken, error) {
@@ -23,4 +23,8 @@ func (repo PersonalAccessTokenRepository) FindByIDAndHashedToken(id uint64, hash
   }
 
   return &token, nil
+}
+
+func (repo PersonalAccessTokenRepository) Delete(token *models.PersonalAccessToken) error {
+  return repo.db.Delete(token).Error
 }

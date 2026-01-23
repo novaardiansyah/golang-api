@@ -14,10 +14,12 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/thedevsaddam/govalidator"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 type AuthController struct {
-	userRepo repositories.UserRepository
+	UserRepo  *repositories.UserRepository
+	TokenRepo *repositories.PersonalAccessTokenRepository
 }
 
 type LoginRequest struct {
@@ -25,8 +27,11 @@ type LoginRequest struct {
 	Password string `json:"password" validate:"required,min=6"`
 }
 
-func NewAuthController(userRepo repositories.UserRepository) *AuthController {
-	return &AuthController{userRepo: userRepo}
+func NewAuthController(db *gorm.DB) *AuthController {
+	return &AuthController{
+		TokenRepo: repositories.NewPersonalAccessTokenRepository(db),
+		UserRepo:  repositories.NewUserRepository(db),
+	}
 }
 
 type LoginResponse struct {
@@ -57,7 +62,7 @@ func (ctrl *AuthController) Login(c *fiber.Ctx) error {
 		return utils.ValidationError(c, errs)
 	}
 
-	user, err := ctrl.userRepo.FindByEmail(data["email"].(string))
+	user, err := ctrl.UserRepo.FindByEmail(data["email"].(string))
 	if err != nil {
 		return utils.ErrorResponse(c, fiber.StatusUnauthorized, "Invalid credentials")
 	}
@@ -97,9 +102,12 @@ func (ctrl *AuthController) Login(c *fiber.Ctx) error {
 	})
 }
 
-// func (ctrl *AuthController) Logout(c *fiber.Ctx) error {
-	
-// }
+func (ctrl *AuthController) Logout(c *fiber.Ctx) error {
+	token := c.Locals("token").(models.PersonalAccessToken)
+	ctrl.TokenRepo.Delete(&token)
+
+	return utils.SuccessResponse(c, "Logout successful. Current access token has been revoked.", nil)
+}
 
 type ValidateTokenUserResponse struct {
 	ID   uint   `json:"id"`
@@ -127,7 +135,7 @@ func (ctrl *AuthController) ValidateToken(c *fiber.Ctx) error {
 	return utils.SuccessResponse(c, "Token is valid", ValidateTokenResponse{
 		User: ValidateTokenUserResponse{
 			ID:   user.ID,
-      Code: user.Code,
+			Code: user.Code,
 			Name: user.Name,
 		},
 	})

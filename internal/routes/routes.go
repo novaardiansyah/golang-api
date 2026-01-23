@@ -30,8 +30,9 @@ func SetupRoutes(app *fiber.App) {
 	app.Static("/", "./public")
 
 	userRepo := repositories.NewUserRepository(db)
+
 	userController := controllers.NewUserController(userRepo)
-	authController := controllers.NewAuthController(*userRepo)
+	authController := controllers.NewAuthController(db)
 
 	api := app.Group("/api")
 
@@ -70,7 +71,7 @@ func SetupRoutes(app *fiber.App) {
 
 	auth.Post("/login", authController.Login)
 	auth.Get("/validate-token", middleware.Auth(db), authController.ValidateToken)
-	// auth.Post("/logout", authController.Logout)
+	auth.Post("/logout", middleware.Auth(db), authController.Logout)
 
 	users := api.Group("/users", middleware.Auth(db))
 	users.Get("/", userController.Index)

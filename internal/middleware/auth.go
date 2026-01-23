@@ -86,7 +86,7 @@ func Auth(db *gorm.DB) fiber.Handler {
 			})
 		}
 
-		c.Locals("token", token)
+		c.Locals("token", *token)
 		c.Locals("user_id", UserId)
 		c.Locals("user", *user)
 
