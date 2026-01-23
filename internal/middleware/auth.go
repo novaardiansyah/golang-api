@@ -5,13 +5,17 @@ import (
 	"encoding/hex"
 	"golang-api/internal/config"
 	"golang-api/internal/models"
+	"golang-api/internal/repositories"
 	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"gorm.io/gorm"
 )
 
-func Auth() fiber.Handler {
+func Auth(db *gorm.DB) fiber.Handler {
+  userRepo := repositories.NewUserRepository(db)
+
 	return func(c *fiber.Ctx) error {
 		authHeader := c.Get("Authorization")
 
@@ -64,8 +68,20 @@ func Auth() fiber.Handler {
 
 		db.Model(&token).Update("last_used_at", time.Now())
 
+    UserId := token.TokenableID
+
+    user, err := userRepo.FindByID(UserId)
+
+    if err != nil {
+      return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+        "success": false,
+        "message": "Unauthorized: User not found",
+      })
+    }
+
 		c.Locals("token", token)
-		c.Locals("user_id", token.TokenableID)
+		c.Locals("user_id", UserId)
+    c.Locals("user", *user)
 
 		return c.Next()
 	}

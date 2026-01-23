@@ -44,7 +44,7 @@ func SetupRoutes(app *fiber.App) {
 		})
 	})
 
-	api.Get("/test-email", middleware.Auth(), func(c *fiber.Ctx) error {
+	api.Get("/test-email", middleware.Auth(db), func(c *fiber.Ctx) error {
 		to := c.Query("to", "admin@novadev.my.id")
 
 		err := utils.SendEmail(to, "Testing Golang Email", map[string]any{
@@ -69,35 +69,36 @@ func SetupRoutes(app *fiber.App) {
 	auth.Use(middleware.AuthLimiter())
 
 	auth.Post("/login", authController.Login)
-	auth.Get("/validate-token", authController.ValidateToken)
+	auth.Get("/validate-token", middleware.Auth(db), authController.ValidateToken)
+	// auth.Post("/logout", authController.Logout)
 
-	users := api.Group("/users", middleware.Auth())
+	users := api.Group("/users", middleware.Auth(db))
 	users.Get("/", userController.Index)
 	users.Get("/:id", userController.Show)
 
 	paymentRepo := repositories.NewPaymentRepository(db)
 	paymentController := controllers.NewPaymentController(paymentRepo)
 
-	payments := api.Group("/payments", middleware.Auth())
+	payments := api.Group("/payments", middleware.Auth(db))
 	payments.Get("/", paymentController.Index)
 	payments.Get("/summary", paymentController.Summary)
 	payments.Get("/:id", paymentController.Show)
 
 	notificationController := controllers.NewNotificationController()
 
-	notifications := api.Group("/notifications", middleware.Auth())
+	notifications := api.Group("/notifications", middleware.Auth(db))
 	notifications.Put("/settings", notificationController.UpdateSettings)
 
 	fileDownloadRepo := repositories.NewFileDownloadRepository(db)
 	fileDownloadController := controllers.NewFileDownloadController(fileDownloadRepo)
 
-	files := api.Group("/files/d", middleware.Auth())
+	files := api.Group("/files/d", middleware.Auth(db))
 	files.Get("/:uid", fileDownloadController.GetFiles)
 
 	paymentGoalRepo := repositories.NewPaymentGoalRepository(db)
 	paymentGoalController := controllers.NewPaymentGoalController(paymentGoalRepo)
 
-	paymentGoals := api.Group("/payment-goals", middleware.Auth())
+	paymentGoals := api.Group("/payment-goals", middleware.Auth(db))
 	paymentGoals.Get("/", paymentGoalController.Index)
 	paymentGoals.Get("/overview", paymentGoalController.Overview)
 	paymentGoals.Get("/:id", paymentGoalController.Show)
@@ -105,6 +106,6 @@ func SetupRoutes(app *fiber.App) {
 	paymentAccountRepo := repositories.NewPaymentAccountRepository(db)
 	paymentAccountController := controllers.NewPaymentAccountController(paymentAccountRepo)
 
-	paymentAccounts := api.Group("/payment-accounts", middleware.Auth())
+	paymentAccounts := api.Group("/payment-accounts", middleware.Auth(db))
 	paymentAccounts.Get("/", paymentAccountController.Index)
 }
