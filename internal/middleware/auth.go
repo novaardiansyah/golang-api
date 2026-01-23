@@ -3,9 +3,8 @@ package middleware
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"golang-api/internal/config"
-	"golang-api/internal/models"
 	"golang-api/internal/repositories"
+	"strconv"
 	"strings"
 	"time"
 
@@ -14,7 +13,8 @@ import (
 )
 
 func Auth(db *gorm.DB) fiber.Handler {
-  userRepo := repositories.NewUserRepository(db)
+	userRepo := repositories.NewUserRepository(db)
+	personalAccessTokenRepo := repositories.NewPersonalAccessTokenRepository(db)
 
 	return func(c *fiber.Ctx) error {
 		authHeader := c.Get("Authorization")
@@ -42,17 +42,24 @@ func Auth(db *gorm.DB) fiber.Handler {
 			})
 		}
 
-		tokenID := parts[0]
+		tokenIDStr := parts[0]
 		plainTextToken := parts[1]
+
+		tokenID, err := strconv.ParseUint(tokenIDStr, 10, 64)
+
+		if err != nil {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"success": false,
+				"message": "Unauthorized: Invalid token format",
+			})
+		}
 
 		hash := sha256.Sum256([]byte(plainTextToken))
 		hashedToken := hex.EncodeToString(hash[:])
 
-		db := config.GetDB()
-		var token models.PersonalAccessToken
+		token, err := personalAccessTokenRepo.FindByIDAndHashedToken(tokenID, hashedToken)
 
-		result := db.Where("id = ? AND token = ?", tokenID, hashedToken).First(&token)
-		if result.Error != nil {
+		if err != nil {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"success": false,
 				"message": "Unauthorized: Invalid token",
@@ -68,20 +75,20 @@ func Auth(db *gorm.DB) fiber.Handler {
 
 		db.Model(&token).Update("last_used_at", time.Now())
 
-    UserId := token.TokenableID
+		UserId := token.TokenableID
 
-    user, err := userRepo.FindByID(UserId)
+		user, err := userRepo.FindByID(UserId)
 
-    if err != nil {
-      return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-        "success": false,
-        "message": "Unauthorized: User not found",
-      })
-    }
+		if err != nil {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"success": false,
+				"message": "Unauthorized: User not found",
+			})
+		}
 
 		c.Locals("token", token)
 		c.Locals("user_id", UserId)
-    c.Locals("user", *user)
+		c.Locals("user", *user)
 
 		return c.Next()
 	}
