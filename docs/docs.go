@@ -57,7 +57,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/golang-api_pkg_utils.SimpleResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/golang-api_pkg_utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/golang-api_internal_dto.LoginResponse"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "401": {

@@ -17,7 +17,7 @@ import (
 
 type AuthService interface {
 	Login(email, password string) (string, error)
-	ChangePassword(user *models.User, currentPassword, newPassword string) error
+	ChangePassword(user *models.User, currentPassword, newPassword string) (string, error)
 }
 
 type authService struct {
@@ -43,8 +43,42 @@ func (s *authService) Login(email, password string) (string, error) {
 		return "", errors.New("invalid_credentials")
 	}
 
-	expireDays := 7
-	hashedToken, plainToken := generateToken(40)
+	return s.generateAuthToken(user, 7)
+}
+
+func (s *authService) ChangePassword(user *models.User, currentPassword, newPassword string) (string, error) {
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(currentPassword))
+	if err != nil {
+		return "", errors.New("current_password_incorrect")
+	}
+
+	hashed, err := bcrypt.GenerateFromPassword([]byte(newPassword), 12)
+	if err != nil {
+		return "", err
+	}
+
+	hashedPassword := strings.Replace(string(hashed), "$2a$", "$2y$", 1)
+	s.UserRepo.UpdatePassword(user.ID, hashedPassword)
+
+	s.TokenRepo.DeleteByUserID(user.ID)
+	newToken, err := s.generateAuthToken(user, 7)
+
+	if err != nil {
+		return "", err
+	}
+
+	return newToken, nil
+}
+
+func (s *authService) generateAuthToken(user *models.User, expireDays int) (string, error) {
+	length := 40
+	bytes := make([]byte, length)
+	rand.Read(bytes)
+
+	plainToken := hex.EncodeToString(bytes)[:length]
+	hash := sha256.Sum256([]byte(plainToken))
+	hashedToken := hex.EncodeToString(hash[:])
+
 	expiration := time.Now().AddDate(0, 0, expireDays)
 
 	token := models.PersonalAccessToken{
@@ -65,31 +99,4 @@ func (s *authService) Login(email, password string) (string, error) {
 	fullToken := fmt.Sprintf("%d|%s", token.ID, plainToken)
 
 	return fullToken, nil
-}
-
-func (s *authService) ChangePassword(user *models.User, currentPassword, newPassword string) error {
-	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(currentPassword))
-	if err != nil {
-		return errors.New("current_password_incorrect")
-	}
-
-	hashed, err := bcrypt.GenerateFromPassword([]byte(newPassword), 12)
-	if err != nil {
-		return err
-	}
-
-	user.Password = strings.Replace(string(hashed), "$2a$", "$2y$", 1)
-
-	return s.UserRepo.Update(user)
-}
-
-func generateToken(length int) (string, string) {
-	bytes := make([]byte, length)
-	rand.Read(bytes)
-	plainToken := hex.EncodeToString(bytes)[:length]
-
-	hash := sha256.Sum256([]byte(plainToken))
-	hashedToken := hex.EncodeToString(hash[:])
-
-	return hashedToken, plainToken
 }

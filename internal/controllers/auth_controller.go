@@ -126,7 +126,7 @@ func (ctrl *AuthController) ValidateToken(c *fiber.Ctx) error {
 // @Produce json
 // @Security BearerAuth
 // @Param change-password body dto.ChangePasswordRequest true "Change password"
-// @Success 200 {object} utils.SimpleResponse
+// @Success 200 {object} utils.Response{data=dto.LoginResponse}
 // @Failure 401 {object} utils.UnauthorizedResponse
 // @Failure 422 {object} utils.ValidationErrorResponse
 // @Router /auth/change-password [post]
@@ -151,7 +151,7 @@ func (ctrl *AuthController) ChangePassword(c *fiber.Ctx) error {
 		})
 	}
 
-	err := ctrl.AuthService.ChangePassword(
+	newToken, err := ctrl.AuthService.ChangePassword(
 		&user,
 		data["current_password"].(string),
 		data["new_password"].(string),
@@ -164,5 +164,7 @@ func (ctrl *AuthController) ChangePassword(c *fiber.Ctx) error {
 		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to update password")
 	}
 
-	return utils.SimpleSuccessResponse(c, "Password changed successfully")
+	return utils.SuccessResponse(c, "Password changed successfully", dto.LoginResponse{
+		Token: newToken,
+	})
 }

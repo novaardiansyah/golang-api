@@ -376,7 +376,12 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/golang-api_pkg_utils.SimpleResponse'
+            allOf:
+            - $ref: '#/definitions/golang-api_pkg_utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/golang-api_internal_dto.LoginResponse'
+              type: object
         "401":
           description: Unauthorized
           schema:
