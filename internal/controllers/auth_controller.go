@@ -180,3 +180,53 @@ func (ctrl *AuthController) ChangePassword(c *fiber.Ctx) error {
 		Token: newToken,
 	})
 }
+
+// UpdateProfile godoc
+// @Summary Update user profile
+// @Description Update user profile with name and email
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param profile body dto.UpdateProfileRequest true "Update profile"
+// @Success 200 {object} utils.SimpleResponse
+// @Failure 400 {object} utils.SimpleErrorResponse
+// @Failure 401 {object} utils.UnauthorizedResponse
+// @Failure 422 {object} utils.ValidationErrorResponse
+// @Router /auth/profile [put]
+func (ctrl *AuthController) UpdateProfile(c *fiber.Ctx) error {
+	userId := c.Locals("user_id").(uint)
+
+	user, err := ctrl.UserRepo.FindByID(userId)
+
+	if err != nil {
+		return utils.ErrorResponse(c, fiber.StatusUnauthorized, "Unauthorized: User not found")
+	}
+
+	var req dto.UpdateProfileRequest
+
+	rules := govalidator.MapData{
+		"name":  []string{"required", "min:3"},
+		"email": []string{"email"},
+	}
+
+	errs := utils.ValidateJSON(c, &req, rules)
+	if errs != nil {
+		return utils.ValidationError(c, errs)
+	}
+
+	err = ctrl.AuthService.UpdateProfile(
+		user,
+		req.Name,
+		req.Email,
+	)
+
+	if err != nil {
+		if err.Error() == "email_already_used" {
+			return utils.ErrorResponse(c, fiber.StatusBadRequest, "Email already used")
+		}
+		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to update profile")
+	}
+
+	return utils.SimpleSuccessResponse(c, "Profile updated successfully")
+}

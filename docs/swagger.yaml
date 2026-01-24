@@ -32,6 +32,17 @@ definitions:
       token:
         type: string
     type: object
+  golang-api_internal_dto.UpdateProfileRequest:
+    properties:
+      email:
+        type: string
+      name:
+        minLength: 3
+        type: string
+    required:
+    - email
+    - name
+    type: object
   golang-api_internal_dto.ValidateTokenResponse:
     properties:
       user:
@@ -78,6 +89,14 @@ definitions:
       message:
         type: string
       success:
+        type: boolean
+    type: object
+  golang-api_pkg_utils.SimpleErrorResponse:
+    properties:
+      message:
+        type: string
+      success:
+        default: false
         type: boolean
     type: object
   golang-api_pkg_utils.SimpleResponse:
@@ -449,6 +468,42 @@ paths:
       security:
       - BearerAuth: []
       summary: Logout user
+      tags:
+      - auth
+  /auth/profile:
+    put:
+      consumes:
+      - application/json
+      description: Update user profile with name and email
+      parameters:
+      - description: Update profile
+        in: body
+        name: profile
+        required: true
+        schema:
+          $ref: '#/definitions/golang-api_internal_dto.UpdateProfileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/golang-api_pkg_utils.SimpleResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/golang-api_pkg_utils.SimpleErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/golang-api_pkg_utils.UnauthorizedResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/golang-api_pkg_utils.ValidationErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update user profile
       tags:
       - auth
   /auth/validate-token:

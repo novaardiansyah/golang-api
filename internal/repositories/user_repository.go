@@ -66,3 +66,7 @@ func (r *UserRepository) UpdatePassword(userID uint, password string) error {
 func (r *UserRepository) Delete(id uint) error {
 	return r.db.Delete(&models.User{}, id).Error
 }
+
+func (r *UserRepository) UpdateFields(id uint, fields map[string]interface{}) error {
+	return r.db.Model(&models.User{}).Where("id = ?", id).Updates(fields).Error
+}

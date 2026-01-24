@@ -18,6 +18,7 @@ import (
 type AuthService interface {
 	Login(email, password string) (string, error)
 	ChangePassword(user *models.User, currentPassword, newPassword string) (string, error)
+	UpdateProfile(user *models.User, name, email string) error
 }
 
 type authService struct {
@@ -68,6 +69,29 @@ func (s *authService) ChangePassword(user *models.User, currentPassword, newPass
 	}
 
 	return newToken, nil
+}
+
+func (s *authService) UpdateProfile(user *models.User, name, email string) error {
+	if email == "" {
+		email = user.Email
+	}
+
+	if user.Email != email {
+		if _, err := s.UserRepo.FindByEmail(email); err == nil {
+			return errors.New("email_already_used")
+		}
+	}
+
+	updateFields := map[string]interface{}{
+		"name":  name,
+		"email": email,
+	}
+
+	if err := s.UserRepo.UpdateFields(user.ID, updateFields); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *authService) generateAuthToken(user *models.User, expireDays int) (string, error) {
