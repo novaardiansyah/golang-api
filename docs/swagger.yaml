@@ -1,5 +1,51 @@
 basePath: /api
 definitions:
+  golang-api_internal_dto.ChangePasswordRequest:
+    properties:
+      current_password:
+        minLength: 6
+        type: string
+      new_password:
+        minLength: 6
+        type: string
+      new_password_confirmation:
+        minLength: 6
+        type: string
+    required:
+    - current_password
+    - new_password
+    - new_password_confirmation
+    type: object
+  golang-api_internal_dto.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  golang-api_internal_dto.LoginResponse:
+    properties:
+      token:
+        type: string
+    type: object
+  golang-api_internal_dto.ValidateTokenResponse:
+    properties:
+      user:
+        $ref: '#/definitions/golang-api_internal_dto.ValidateTokenUserResponse'
+    type: object
+  golang-api_internal_dto.ValidateTokenUserResponse:
+    properties:
+      code:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
   golang-api_pkg_utils.Meta:
     properties:
       current_page:
@@ -89,22 +135,6 @@ definitions:
       url:
         type: string
     type: object
-  internal_controllers.ChangePasswordRequest:
-    properties:
-      current_password:
-        minLength: 6
-        type: string
-      new_password:
-        minLength: 6
-        type: string
-      new_password_confirmation:
-        minLength: 6
-        type: string
-    required:
-    - current_password
-    - new_password
-    - new_password_confirmation
-    type: object
   internal_controllers.FileSwagger:
     properties:
       code:
@@ -138,22 +168,6 @@ definitions:
       target_amount:
         type: string
       target_date:
-        type: string
-    type: object
-  internal_controllers.LoginRequest:
-    properties:
-      email:
-        type: string
-      password:
-        minLength: 6
-        type: string
-    required:
-    - email
-    - password
-    type: object
-  internal_controllers.LoginResponse:
-    properties:
-      token:
         type: string
     type: object
   internal_controllers.OriginalAttachment:
@@ -330,20 +344,6 @@ definitions:
       updated_at:
         type: string
     type: object
-  internal_controllers.ValidateTokenResponse:
-    properties:
-      user:
-        $ref: '#/definitions/internal_controllers.ValidateTokenUserResponse'
-    type: object
-  internal_controllers.ValidateTokenUserResponse:
-    properties:
-      code:
-        type: string
-      id:
-        type: integer
-      name:
-        type: string
-    type: object
 host: localhost:8080
 info:
   contact:
@@ -369,7 +369,7 @@ paths:
         name: change-password
         required: true
         schema:
-          $ref: '#/definitions/internal_controllers.ChangePasswordRequest'
+          $ref: '#/definitions/golang-api_internal_dto.ChangePasswordRequest'
       produces:
       - application/json
       responses:
@@ -401,7 +401,7 @@ paths:
         name: login
         required: true
         schema:
-          $ref: '#/definitions/internal_controllers.LoginRequest'
+          $ref: '#/definitions/golang-api_internal_dto.LoginRequest'
       produces:
       - application/json
       responses:
@@ -412,7 +412,7 @@ paths:
             - $ref: '#/definitions/golang-api_pkg_utils.Response'
             - properties:
                 data:
-                  $ref: '#/definitions/internal_controllers.LoginResponse'
+                  $ref: '#/definitions/golang-api_internal_dto.LoginResponse'
               type: object
         "401":
           description: Unauthorized
@@ -461,7 +461,7 @@ paths:
             - $ref: '#/definitions/golang-api_pkg_utils.Response'
             - properties:
                 data:
-                  $ref: '#/definitions/internal_controllers.ValidateTokenResponse'
+                  $ref: '#/definitions/golang-api_internal_dto.ValidateTokenResponse'
               type: object
         "401":
           description: Unauthorized

@@ -44,7 +44,7 @@ func (s *authService) Login(email, password string) (string, error) {
 	}
 
 	expireDays := 7
-	hashedToken, plainToken := generateHashedToken(40)
+	hashedToken, plainToken := generateToken(40)
 	expiration := time.Now().AddDate(0, 0, expireDays)
 
 	token := models.PersonalAccessToken{
@@ -83,7 +83,7 @@ func (s *authService) ChangePassword(user *models.User, currentPassword, newPass
 	return s.UserRepo.Update(user)
 }
 
-func generateHashedToken(length int) (string, string) {
+func generateToken(length int) (string, string) {
 	bytes := make([]byte, length)
 	rand.Read(bytes)
 	plainToken := hex.EncodeToString(bytes)[:length]

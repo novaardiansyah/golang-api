@@ -49,7 +49,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_controllers.ChangePasswordRequest"
+                            "$ref": "#/definitions/golang-api_internal_dto.ChangePasswordRequest"
                         }
                     }
                 ],
@@ -95,7 +95,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_controllers.LoginRequest"
+                            "$ref": "#/definitions/golang-api_internal_dto.LoginRequest"
                         }
                     }
                 ],
@@ -111,7 +111,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/internal_controllers.LoginResponse"
+                                            "$ref": "#/definitions/golang-api_internal_dto.LoginResponse"
                                         }
                                     }
                                 }
@@ -197,7 +197,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/internal_controllers.ValidateTokenResponse"
+                                            "$ref": "#/definitions/golang-api_internal_dto.ValidateTokenResponse"
                                         }
                                     }
                                 }
@@ -951,6 +951,74 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "golang-api_internal_dto.ChangePasswordRequest": {
+            "type": "object",
+            "required": [
+                "current_password",
+                "new_password",
+                "new_password_confirmation"
+            ],
+            "properties": {
+                "current_password": {
+                    "type": "string",
+                    "minLength": 6
+                },
+                "new_password": {
+                    "type": "string",
+                    "minLength": 6
+                },
+                "new_password_confirmation": {
+                    "type": "string",
+                    "minLength": 6
+                }
+            }
+        },
+        "golang-api_internal_dto.LoginRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 6
+                }
+            }
+        },
+        "golang-api_internal_dto.LoginResponse": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "golang-api_internal_dto.ValidateTokenResponse": {
+            "type": "object",
+            "properties": {
+                "user": {
+                    "$ref": "#/definitions/golang-api_internal_dto.ValidateTokenUserResponse"
+                }
+            }
+        },
+        "golang-api_internal_dto.ValidateTokenUserResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "golang-api_pkg_utils.Meta": {
             "type": "object",
             "properties": {
@@ -1085,28 +1153,6 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_controllers.ChangePasswordRequest": {
-            "type": "object",
-            "required": [
-                "current_password",
-                "new_password",
-                "new_password_confirmation"
-            ],
-            "properties": {
-                "current_password": {
-                    "type": "string",
-                    "minLength": 6
-                },
-                "new_password": {
-                    "type": "string",
-                    "minLength": 6
-                },
-                "new_password_confirmation": {
-                    "type": "string",
-                    "minLength": 6
-                }
-            }
-        },
         "internal_controllers.FileSwagger": {
             "type": "object",
             "properties": {
@@ -1157,30 +1203,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "target_date": {
-                    "type": "string"
-                }
-            }
-        },
-        "internal_controllers.LoginRequest": {
-            "type": "object",
-            "required": [
-                "email",
-                "password"
-            ],
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string",
-                    "minLength": 6
-                }
-            }
-        },
-        "internal_controllers.LoginResponse": {
-            "type": "object",
-            "properties": {
-                "token": {
                     "type": "string"
                 }
             }
@@ -1447,28 +1469,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updated_at": {
-                    "type": "string"
-                }
-            }
-        },
-        "internal_controllers.ValidateTokenResponse": {
-            "type": "object",
-            "properties": {
-                "user": {
-                    "$ref": "#/definitions/internal_controllers.ValidateTokenUserResponse"
-                }
-            }
-        },
-        "internal_controllers.ValidateTokenUserResponse": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "name": {
                     "type": "string"
                 }
             }

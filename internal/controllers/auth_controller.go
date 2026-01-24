@@ -13,6 +13,7 @@
 package controllers
 
 import (
+	"golang-api/internal/dto"
 	"golang-api/internal/models"
 	"golang-api/internal/repositories"
 	"golang-api/internal/service"
@@ -29,11 +30,6 @@ type AuthController struct {
 	AuthService service.AuthService
 }
 
-type LoginRequest struct {
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required,min=6"`
-}
-
 func NewAuthController(db *gorm.DB) *AuthController {
 	return &AuthController{
 		TokenRepo:   repositories.NewPersonalAccessTokenRepository(db),
@@ -42,18 +38,14 @@ func NewAuthController(db *gorm.DB) *AuthController {
 	}
 }
 
-type LoginResponse struct {
-	Token string `json:"token"`
-}
-
 // Login godoc
 // @Summary Authenticate a user
 // @Description Login with email and password to receive a personal access token
 // @Tags auth
 // @Accept json
 // @Produce json
-// @Param login body LoginRequest true "Login credentials"
-// @Success 200 {object} utils.Response{data=LoginResponse}
+// @Param login body dto.LoginRequest true "Login credentials"
+// @Success 200 {object} utils.Response{data=dto.LoginResponse}
 // @Failure 401 {object} utils.UnauthorizedResponse
 // @Failure 422 {object} utils.ValidationErrorResponse
 // @Router /auth/login [post]
@@ -82,7 +74,7 @@ func (ctrl *AuthController) Login(c *fiber.Ctx) error {
 		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to create token")
 	}
 
-	return utils.SuccessResponse(c, "Login successful", LoginResponse{
+	return utils.SuccessResponse(c, "Login successful", dto.LoginResponse{
 		Token: token,
 	})
 }
@@ -104,16 +96,6 @@ func (ctrl *AuthController) Logout(c *fiber.Ctx) error {
 	return utils.SimpleSuccessResponse(c, "Logout successful. Current access token has been revoked.")
 }
 
-type ValidateTokenUserResponse struct {
-	ID   uint   `json:"id"`
-	Code string `json:"code"`
-	Name string `json:"name"`
-}
-
-type ValidateTokenResponse struct {
-	User ValidateTokenUserResponse `json:"user"`
-}
-
 // ValidateToken godoc
 // @Summary Validate authentication token
 // @Description Validate the personal access token and return user information
@@ -121,25 +103,19 @@ type ValidateTokenResponse struct {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Success 200 {object} utils.Response{data=ValidateTokenResponse}
+// @Success 200 {object} utils.Response{data=dto.ValidateTokenResponse}
 // @Failure 401 {object} utils.UnauthorizedResponse
 // @Router /auth/validate-token [get]
 func (ctrl *AuthController) ValidateToken(c *fiber.Ctx) error {
 	user := c.Locals("user").(models.User)
 
-	return utils.SuccessResponse(c, "Token is valid", ValidateTokenResponse{
-		User: ValidateTokenUserResponse{
+	return utils.SuccessResponse(c, "Token is valid", dto.ValidateTokenResponse{
+		User: dto.ValidateTokenUserResponse{
 			ID:   user.ID,
 			Code: user.Code,
 			Name: user.Name,
 		},
 	})
-}
-
-type ChangePasswordRequest struct {
-	CurrentPassword         string `json:"current_password" validate:"required,min=6"`
-	NewPassword             string `json:"new_password" validate:"required,min=6"`
-	NewPasswordConfirmation string `json:"new_password_confirmation" validate:"required,min=6"`
 }
 
 // ChangePassword godoc
@@ -149,7 +125,7 @@ type ChangePasswordRequest struct {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param change-password body ChangePasswordRequest true "Change password"
+// @Param change-password body dto.ChangePasswordRequest true "Change password"
 // @Success 200 {object} utils.SimpleResponse
 // @Failure 401 {object} utils.UnauthorizedResponse
 // @Failure 422 {object} utils.ValidationErrorResponse
