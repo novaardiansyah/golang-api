@@ -1,22 +1,8 @@
-/*
- * Project Name: routes
- * File: routes.go
- * Created Date: Saturday December 27th 2025
- *
- * Author: Nova Ardiansyah admin@novaardiansyah.id
- * Website: https://novaardiansyah.id
- * MIT License: https://github.com/novaardiansyah/golang-api/blob/main/LICENSE
- *
- * Copyright (c) 2025-2026 Nova Ardiansyah, Org
- */
-
 package routes
 
 import (
 	"golang-api/internal/config"
-	"golang-api/internal/controllers"
 	"golang-api/internal/middleware"
-	"golang-api/internal/repositories"
 	"golang-api/pkg/utils"
 
 	"github.com/gofiber/fiber/v2"
@@ -28,11 +14,6 @@ func SetupRoutes(app *fiber.App) {
 
 	app.Use(middleware.GlobalLimiter())
 	app.Static("/", "./public")
-
-	userRepo := repositories.NewUserRepository(db)
-
-	userController := controllers.NewUserController(userRepo)
-	authController := controllers.NewAuthController(db)
 
 	api := app.Group("/api")
 
@@ -66,48 +47,11 @@ func SetupRoutes(app *fiber.App) {
 		})
 	})
 
-	auth := api.Group("/auth")
-	auth.Use(middleware.AuthLimiter())
-
-	auth.Post("/login", authController.Login)
-	auth.Get("/validate-token", middleware.Auth(db), authController.ValidateToken)
-	auth.Post("/logout", middleware.Auth(db), authController.Logout)
-	auth.Post("/change-password", middleware.Auth(db), authController.ChangePassword)
-
-	users := api.Group("/users", middleware.Auth(db))
-	users.Get("/", userController.Index)
-	users.Get("/:id", userController.Show)
-
-	paymentRepo := repositories.NewPaymentRepository(db)
-	paymentController := controllers.NewPaymentController(paymentRepo)
-
-	payments := api.Group("/payments", middleware.Auth(db))
-	payments.Get("/", paymentController.Index)
-	payments.Get("/summary", paymentController.Summary)
-	payments.Get("/:id", paymentController.Show)
-
-	notificationController := controllers.NewNotificationController()
-
-	notifications := api.Group("/notifications", middleware.Auth(db))
-	notifications.Put("/settings", notificationController.UpdateSettings)
-
-	fileDownloadRepo := repositories.NewFileDownloadRepository(db)
-	fileDownloadController := controllers.NewFileDownloadController(fileDownloadRepo)
-
-	files := api.Group("/files/d", middleware.Auth(db))
-	files.Get("/:uid", fileDownloadController.GetFiles)
-
-	paymentGoalRepo := repositories.NewPaymentGoalRepository(db)
-	paymentGoalController := controllers.NewPaymentGoalController(paymentGoalRepo)
-
-	paymentGoals := api.Group("/payment-goals", middleware.Auth(db))
-	paymentGoals.Get("/", paymentGoalController.Index)
-	paymentGoals.Get("/overview", paymentGoalController.Overview)
-	paymentGoals.Get("/:id", paymentGoalController.Show)
-
-	paymentAccountRepo := repositories.NewPaymentAccountRepository(db)
-	paymentAccountController := controllers.NewPaymentAccountController(paymentAccountRepo)
-
-	paymentAccounts := api.Group("/payment-accounts", middleware.Auth(db))
-	paymentAccounts.Get("/", paymentAccountController.Index)
+	AuthRoutes(api, db)
+	UserRoutes(api, db)
+	PaymentRoutes(api, db)
+	NotificationRoutes(api, db)
+	FileRoutes(api, db)
+	PaymentGoalRoutes(api, db)
+	PaymentAccountRoutes(api, db)
 }
