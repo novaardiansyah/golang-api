@@ -13,25 +13,20 @@
 package controllers
 
 import (
-	"crypto/rand"
-	"crypto/sha256"
-	"encoding/hex"
-	"fmt"
-	"golang-api/internal/config"
 	"golang-api/internal/models"
 	"golang-api/internal/repositories"
+	"golang-api/internal/service"
 	"golang-api/pkg/utils"
-	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/thedevsaddam/govalidator"
-	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
 type AuthController struct {
-	UserRepo  *repositories.UserRepository
-	TokenRepo *repositories.PersonalAccessTokenRepository
+	UserRepo    *repositories.UserRepository
+	TokenRepo   *repositories.PersonalAccessTokenRepository
+	AuthService service.AuthService
 }
 
 type LoginRequest struct {
@@ -41,8 +36,9 @@ type LoginRequest struct {
 
 func NewAuthController(db *gorm.DB) *AuthController {
 	return &AuthController{
-		TokenRepo: repositories.NewPersonalAccessTokenRepository(db),
-		UserRepo:  repositories.NewUserRepository(db),
+		TokenRepo:   repositories.NewPersonalAccessTokenRepository(db),
+		UserRepo:    repositories.NewUserRepository(db),
+		AuthService: service.NewAuthService(db),
 	}
 }
 
@@ -74,43 +70,20 @@ func (ctrl *AuthController) Login(c *fiber.Ctx) error {
 		return utils.ValidationError(c, errs)
 	}
 
-	user, err := ctrl.UserRepo.FindByEmail(data["email"].(string))
+	token, err := ctrl.AuthService.Login(
+		data["email"].(string),
+		data["password"].(string),
+	)
+
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusUnauthorized, "Invalid credentials")
-	}
-
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(data["password"].(string)))
-	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusUnauthorized, "Invalid credentials")
-	}
-
-	plainToken := generateRandomToken(40)
-
-	hash := sha256.Sum256([]byte(plainToken))
-	hashedToken := hex.EncodeToString(hash[:])
-
-	expiration := time.Now().AddDate(0, 0, 7)
-
-	db := config.GetDB()
-	token := models.PersonalAccessToken{
-		TokenableType: "App\\Models\\User",
-		TokenableID:   user.ID,
-		Name:          "auth_token",
-		Token:         hashedToken,
-		Abilities:     "[\"*\"]",
-		ExpiresAt:     &expiration,
-		CreatedAt:     time.Now(),
-		UpdatedAt:     time.Now(),
-	}
-
-	if err := db.Create(&token).Error; err != nil {
+		if err.Error() == "invalid_credentials" {
+			return utils.ErrorResponse(c, fiber.StatusUnauthorized, "Invalid credentials")
+		}
 		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to create token")
 	}
 
-	fullToken := fmt.Sprintf("%d|%s", token.ID, plainToken)
-
 	return utils.SuccessResponse(c, "Login successful", LoginResponse{
-		Token: fullToken,
+		Token: token,
 	})
 }
 
@@ -202,28 +175,18 @@ func (ctrl *AuthController) ChangePassword(c *fiber.Ctx) error {
 		})
 	}
 
-	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(data["current_password"].(string)))
+	err := ctrl.AuthService.ChangePassword(
+		&user,
+		data["current_password"].(string),
+		data["new_password"].(string),
+	)
+
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusUnauthorized, "Your current password is incorrect")
-	}
-
-	newPassword, err := bcrypt.GenerateFromPassword([]byte(data["new_password"].(string)), bcrypt.DefaultCost)
-
-	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to generate password")
-	}
-
-	user.Password = string(newPassword)
-
-	if err := ctrl.UserRepo.Update(&user); err != nil {
+		if err.Error() == "current_password_incorrect" {
+			return utils.ErrorResponse(c, fiber.StatusUnauthorized, "Your current password is incorrect")
+		}
 		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to update password")
 	}
 
 	return utils.SimpleSuccessResponse(c, "Password changed successfully")
-}
-
-func generateRandomToken(length int) string {
-	bytes := make([]byte, length)
-	rand.Read(bytes)
-	return hex.EncodeToString(bytes)[:length]
 }

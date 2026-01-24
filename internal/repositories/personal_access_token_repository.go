@@ -1,30 +1,34 @@
 package repositories
 
 import (
-  "golang-api/internal/models"
+	"golang-api/internal/models"
 
-  "gorm.io/gorm"
+	"gorm.io/gorm"
 )
 
 type PersonalAccessTokenRepository struct {
-  db *gorm.DB
+	db *gorm.DB
 }
 
 func NewPersonalAccessTokenRepository(db *gorm.DB) *PersonalAccessTokenRepository {
-  return &PersonalAccessTokenRepository{db: db}
+	return &PersonalAccessTokenRepository{db: db}
 }
 
 func (repo PersonalAccessTokenRepository) FindByIDAndHashedToken(id uint64, hashedToken string) (*models.PersonalAccessToken, error) {
-  var token models.PersonalAccessToken
+	var token models.PersonalAccessToken
 
-  result := repo.db.Where("id = ? AND token = ?", id, hashedToken).First(&token)
-  if result.Error != nil {
-    return nil, result.Error
-  }
+	result := repo.db.Where("id = ? AND token = ?", id, hashedToken).First(&token)
+	if result.Error != nil {
+		return nil, result.Error
+	}
 
-  return &token, nil
+	return &token, nil
 }
 
 func (repo PersonalAccessTokenRepository) Delete(token *models.PersonalAccessToken) error {
-  return repo.db.Delete(token).Error
+	return repo.db.Delete(token).Error
+}
+
+func (repo PersonalAccessTokenRepository) Create(token *models.PersonalAccessToken) error {
+	return repo.db.Create(token).Error
 }
