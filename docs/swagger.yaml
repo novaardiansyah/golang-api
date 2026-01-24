@@ -45,7 +45,7 @@ definitions:
   golang-api_pkg_utils.UnauthorizedResponse:
     properties:
       message:
-        default: 'Unauthorized: reason..'
+        default: 'Unauthorized: reason...'
         type: string
       success:
         default: false
@@ -88,6 +88,22 @@ definitions:
         $ref: '#/definitions/internal_controllers.OriginalAttachment'
       url:
         type: string
+    type: object
+  internal_controllers.ChangePasswordRequest:
+    properties:
+      current_password:
+        minLength: 6
+        type: string
+      new_password:
+        minLength: 6
+        type: string
+      new_password_confirmation:
+        minLength: 6
+        type: string
+    required:
+    - current_password
+    - new_password
+    - new_password_confirmation
     type: object
   internal_controllers.FileSwagger:
     properties:
@@ -342,6 +358,38 @@ info:
   title: Golang API
   version: "1.0"
 paths:
+  /auth/change-password:
+    post:
+      consumes:
+      - application/json
+      description: Change user password with current password and new password
+      parameters:
+      - description: Change password
+        in: body
+        name: change-password
+        required: true
+        schema:
+          $ref: '#/definitions/internal_controllers.ChangePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/golang-api_pkg_utils.SimpleResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/golang-api_pkg_utils.UnauthorizedResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/golang-api_pkg_utils.ValidationErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Change user password
+      tags:
+      - auth
   /auth/login:
     post:
       consumes:

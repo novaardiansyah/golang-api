@@ -2,11 +2,11 @@
  * Project Name: controllers
  * File: auth_controller.go
  * Created Date: Sunday December 28th 2025
- * 
+ *
  * Author: Nova Ardiansyah admin@novaardiansyah.id
  * Website: https://novaardiansyah.id
  * MIT License: https://github.com/novaardiansyah/golang-api/blob/main/LICENSE
- * 
+ *
  * Copyright (c) 2026 Nova Ardiansyah, Org
  */
 
@@ -161,6 +161,65 @@ func (ctrl *AuthController) ValidateToken(c *fiber.Ctx) error {
 			Name: user.Name,
 		},
 	})
+}
+
+type ChangePasswordRequest struct {
+	CurrentPassword         string `json:"current_password" validate:"required,min=6"`
+	NewPassword             string `json:"new_password" validate:"required,min=6"`
+	NewPasswordConfirmation string `json:"new_password_confirmation" validate:"required,min=6"`
+}
+
+// ChangePassword godoc
+// @Summary Change user password
+// @Description Change user password with current password and new password
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param change-password body ChangePasswordRequest true "Change password"
+// @Success 200 {object} utils.SimpleResponse
+// @Failure 401 {object} utils.UnauthorizedResponse
+// @Failure 422 {object} utils.ValidationErrorResponse
+// @Router /auth/change-password [post]
+func (ctrl *AuthController) ChangePassword(c *fiber.Ctx) error {
+	user := c.Locals("user").(models.User)
+	data := make(map[string]interface{})
+
+	rules := govalidator.MapData{
+		"current_password":          []string{"required", "min:6"},
+		"new_password":              []string{"required", "min:6"},
+		"new_password_confirmation": []string{"required", "min:6"},
+	}
+
+	errs := utils.ValidateJSON(c, &data, rules)
+	if errs != nil {
+		return utils.ValidationError(c, errs)
+	}
+
+	if data["new_password"] != data["new_password_confirmation"] {
+		return utils.ValidationError(c, map[string][]string{
+			"new_password": {"Password confirmation does not match"},
+		})
+	}
+
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(data["current_password"].(string)))
+	if err != nil {
+		return utils.ErrorResponse(c, fiber.StatusUnauthorized, "Your current password is incorrect")
+	}
+
+	newPassword, err := bcrypt.GenerateFromPassword([]byte(data["new_password"].(string)), bcrypt.DefaultCost)
+
+	if err != nil {
+		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to generate password")
+	}
+
+	user.Password = string(newPassword)
+
+	if err := ctrl.UserRepo.Update(&user); err != nil {
+		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to update password")
+	}
+
+	return utils.SimpleSuccessResponse(c, "Password changed successfully")
 }
 
 func generateRandomToken(length int) string {

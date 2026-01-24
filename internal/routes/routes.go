@@ -72,6 +72,7 @@ func SetupRoutes(app *fiber.App) {
 	auth.Post("/login", authController.Login)
 	auth.Get("/validate-token", middleware.Auth(db), authController.ValidateToken)
 	auth.Post("/logout", middleware.Auth(db), authController.Logout)
+	auth.Post("/change-password", middleware.Auth(db), authController.ChangePassword)
 
 	users := api.Group("/users", middleware.Auth(db))
 	users.Get("/", userController.Index)
