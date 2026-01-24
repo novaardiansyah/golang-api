@@ -107,7 +107,12 @@ func (ctrl *AuthController) Logout(c *fiber.Ctx) error {
 // @Failure 401 {object} utils.UnauthorizedResponse
 // @Router /auth/validate-token [get]
 func (ctrl *AuthController) ValidateToken(c *fiber.Ctx) error {
-	user := c.Locals("user").(models.User)
+	userId := c.Locals("user_id").(uint)
+	user, err := ctrl.UserRepo.FindByID(userId)
+
+	if err != nil {
+		return utils.ErrorResponse(c, fiber.StatusUnauthorized, "Unauthorized: User not found")
+	}
 
 	return utils.SuccessResponse(c, "Token is valid", dto.ValidateTokenResponse{
 		User: dto.ValidateTokenUserResponse{
@@ -131,7 +136,14 @@ func (ctrl *AuthController) ValidateToken(c *fiber.Ctx) error {
 // @Failure 422 {object} utils.ValidationErrorResponse
 // @Router /auth/change-password [post]
 func (ctrl *AuthController) ChangePassword(c *fiber.Ctx) error {
-	user := c.Locals("user").(models.User)
+	userId := c.Locals("user_id").(uint)
+
+	user, err := ctrl.UserRepo.FindByID(userId)
+
+	if err != nil {
+		return utils.ErrorResponse(c, fiber.StatusUnauthorized, "Unauthorized: User not found")
+	}
+
 	data := make(map[string]interface{})
 
 	rules := govalidator.MapData{
@@ -152,7 +164,7 @@ func (ctrl *AuthController) ChangePassword(c *fiber.Ctx) error {
 	}
 
 	newToken, err := ctrl.AuthService.ChangePassword(
-		&user,
+		user,
 		data["current_password"].(string),
 		data["new_password"].(string),
 	)

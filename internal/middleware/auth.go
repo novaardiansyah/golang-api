@@ -13,7 +13,6 @@ import (
 )
 
 func Auth(db *gorm.DB) fiber.Handler {
-	userRepo := repositories.NewUserRepository(db)
 	personalAccessTokenRepo := repositories.NewPersonalAccessTokenRepository(db)
 
 	return func(c *fiber.Ctx) error {
@@ -77,18 +76,8 @@ func Auth(db *gorm.DB) fiber.Handler {
 
 		UserId := token.TokenableID
 
-		user, err := userRepo.FindByID(UserId)
-
-		if err != nil {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"success": false,
-				"message": "Unauthorized: User not found",
-			})
-		}
-
 		c.Locals("token", *token)
 		c.Locals("user_id", UserId)
-		c.Locals("user", *user)
 
 		return c.Next()
 	}
