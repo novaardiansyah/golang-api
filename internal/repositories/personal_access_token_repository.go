@@ -36,3 +36,7 @@ func (repo PersonalAccessTokenRepository) Create(token *models.PersonalAccessTok
 func (repo PersonalAccessTokenRepository) DeleteByUserID(userID uint) error {
 	return repo.db.Where("tokenable_type = ? AND tokenable_id = ?", "App\\Models\\User", userID).Delete(&models.PersonalAccessToken{}).Error
 }
+
+func (repo PersonalAccessTokenRepository) UpdateFields(token *models.PersonalAccessToken, fields map[string]interface{}) error {
+	return repo.db.Model(token).Updates(fields).Error
+}

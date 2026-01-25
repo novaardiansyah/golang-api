@@ -13,7 +13,7 @@ import (
 )
 
 func Auth(db *gorm.DB) fiber.Handler {
-	personalAccessTokenRepo := repositories.NewPersonalAccessTokenRepository(db)
+	PersonalAccessTokenRepo := repositories.NewPersonalAccessTokenRepository(db)
 
 	return func(c *fiber.Ctx) error {
 		authHeader := c.Get("Authorization")
@@ -56,7 +56,7 @@ func Auth(db *gorm.DB) fiber.Handler {
 		hash := sha256.Sum256([]byte(plainTextToken))
 		hashedToken := hex.EncodeToString(hash[:])
 
-		token, err := personalAccessTokenRepo.FindByIDAndHashedToken(tokenID, hashedToken)
+		token, err := PersonalAccessTokenRepo.FindByIDAndHashedToken(tokenID, hashedToken)
 
 		if err != nil {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
@@ -72,7 +72,8 @@ func Auth(db *gorm.DB) fiber.Handler {
 			})
 		}
 
-		db.Model(&token).Update("last_used_at", time.Now())
+		fields := map[string]interface{}{"last_used_at": time.Now()}
+		PersonalAccessTokenRepo.UpdateFields(token, fields)
 
 		UserId := token.TokenableID
 
