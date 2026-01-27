@@ -18,13 +18,11 @@ echo "--> Setting writable permissions..."
 sudo chmod 755 runner-app
 
 echo "--> Supervisor setup..."
-sudo cp ./deploy/supervisor.conf /etc/supervisor/conf.d/golang-api_novadev_myid.conf
-sudo cp ./deploy/supervisor-2.conf /etc/supervisor/conf.d/golang-api_novaardiansyah_id.conf
+sudo cp ./deploy/supervisor.conf /etc/supervisor/conf.d/golang-api_novaardiansyah_id.conf
 
 sudo supervisorctl reread
 sudo supervisorctl update
 
-sudo supervisorctl restart golang-api_novadev_myid
 sudo supervisorctl restart golang-api_novaardiansyah_id
 
 echo "--> Securing credentials files..."

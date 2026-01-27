@@ -16,9 +16,9 @@ This project is an evolution and upgrade of the previous [personal-v4](https://g
 
 ## API Documentation
 
-This project includes **integrated API documentation** powered by [Swag](https://github.com/swaggo/swag). Access it at: [https://golang-api.novadev.my.id/api/documentation](https://golang-api.novadev.my.id/api/documentation)
+This project includes **integrated API documentation** powered by [Swag](https://github.com/swaggo/swag). Access it at: [https://golang-api.novaardiansyah.id/api/documentation](https://golang-api.novaardiansyah.id/api/documentation)
 
-<img src="public/markdown/preview-1.png" width="600" alt="API Documentation Preview" />
+<img src="public/markdown/preview-2.png" width="600" alt="API Documentation Preview" />
 
 > **Note:** The API documentation provides a complete reference for all available endpoints, request parameters, and response formats. Please note that most endpoints require authentication with a personal access token.
 
