@@ -2,11 +2,11 @@
  * Project Name: controllers
  * File: payment_controller.go
  * Created Date: Saturday December 27th 2025
- * 
+ *
  * Author: Nova Ardiansyah admin@novaardiansyah.id
  * Website: https://novaardiansyah.id
  * MIT License: https://github.com/novaardiansyah/golang-api/blob/main/LICENSE
- * 
+ *
  * Copyright (c) 2025-2026 Nova Ardiansyah, Org
  */
 
@@ -102,6 +102,7 @@ func NewPaymentController(repo *repositories.PaymentRepository) *PaymentControll
 // @Router /payments [get]
 // @Security BearerAuth
 func (ctrl *PaymentController) Index(c *fiber.Ctx) error {
+	userId := c.Locals("user_id").(uint)
 	page, _ := strconv.Atoi(c.Query("page", "1"))
 	perPage, _ := strconv.Atoi(c.Query("per_page", "10"))
 	typeID, _ := strconv.Atoi(c.Query("type", "0"))
@@ -121,6 +122,7 @@ func (ctrl *PaymentController) Index(c *fiber.Ctx) error {
 		Type:      typeID,
 		AccountID: accountID,
 		Search:    c.Query("search"),
+		UserID:    userId,
 	}
 
 	total, err := ctrl.repo.Count(filter)

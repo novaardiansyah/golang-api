@@ -12,6 +12,7 @@ type PaymentFilter struct {
 	Type      int
 	AccountID int
 	Search    string
+	UserID    uint
 }
 
 type PaymentRepository struct {
@@ -52,6 +53,10 @@ func (r *PaymentRepository) FindAllPaginated(page, limit int, filter PaymentFilt
 		query = query.Where("payments.name LIKE ?", "%"+filter.Search+"%")
 	}
 
+	if filter.UserID > 0 {
+		query = query.Where("payments.user_id = ?", filter.UserID)
+	}
+
 	err := query.Offset(offset).Limit(limit).Order("updated_at desc").Find(&payments).Error
 	return payments, err
 }
@@ -79,6 +84,10 @@ func (r *PaymentRepository) Count(filter PaymentFilter) (int64, error) {
 
 	if filter.Search != "" {
 		query = query.Where("name LIKE ?", "%"+filter.Search+"%")
+	}
+
+	if filter.UserID > 0 {
+		query = query.Where("user_id = ?", filter.UserID)
 	}
 
 	err := query.Count(&count).Error
