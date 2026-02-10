@@ -16,7 +16,7 @@ import (
 )
 
 type AuthService interface {
-	Login(email, password string) (string, error)
+	Login(email, password string) (*models.User, string, error)
 	ChangePassword(user *models.User, currentPassword, newPassword string) (string, error)
 	UpdateProfile(user *models.User, name, email string) error
 }
@@ -33,18 +33,23 @@ func NewAuthService(db *gorm.DB) AuthService {
 	}
 }
 
-func (s *authService) Login(email, password string) (string, error) {
+func (s *authService) Login(email, password string) (*models.User, string, error) {
 	user, err := s.UserRepo.FindByEmail(email)
 	if err != nil {
-		return "", errors.New("invalid_credentials")
+		return nil, "", errors.New("invalid_credentials")
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
-		return "", errors.New("invalid_credentials")
+		return nil, "", errors.New("invalid_credentials")
 	}
 
-	return s.generateAuthToken(user, 7)
+	token, err := s.generateAuthToken(user, 7)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return user, token, nil
 }
 
 func (s *authService) ChangePassword(user *models.User, currentPassword, newPassword string) (string, error) {

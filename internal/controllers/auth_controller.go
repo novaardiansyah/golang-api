@@ -13,6 +13,8 @@
 package controllers
 
 import (
+	"encoding/json"
+	"fmt"
 	"golang-api/internal/dto"
 	"golang-api/internal/models"
 	"golang-api/internal/repositories"
@@ -25,16 +27,18 @@ import (
 )
 
 type AuthController struct {
-	UserRepo    *repositories.UserRepository
-	TokenRepo   *repositories.PersonalAccessTokenRepository
-	AuthService service.AuthService
+	UserRepo        *repositories.UserRepository
+	TokenRepo       *repositories.PersonalAccessTokenRepository
+	ActivityLogRepo *repositories.ActivityLogRepository
+	AuthService     service.AuthService
 }
 
 func NewAuthController(db *gorm.DB) *AuthController {
 	return &AuthController{
-		TokenRepo:   repositories.NewPersonalAccessTokenRepository(db),
-		UserRepo:    repositories.NewUserRepository(db),
-		AuthService: service.NewAuthService(db),
+		TokenRepo:       repositories.NewPersonalAccessTokenRepository(db),
+		UserRepo:        repositories.NewUserRepository(db),
+		ActivityLogRepo: repositories.NewActivityLogRepository(db),
+		AuthService:     service.NewAuthService(db),
 	}
 }
 
@@ -62,7 +66,7 @@ func (ctrl *AuthController) Login(c *fiber.Ctx) error {
 		return utils.ValidationError(c, errs)
 	}
 
-	token, err := ctrl.AuthService.Login(
+	user, token, err := ctrl.AuthService.Login(
 		data["email"].(string),
 		data["password"].(string),
 	)
@@ -73,6 +77,29 @@ func (ctrl *AuthController) Login(c *fiber.Ctx) error {
 		}
 		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to create token")
 	}
+
+	properties, _ := json.Marshal(map[string]interface{}{
+		"id":    user.ID,
+		"name":  user.Name,
+		"email": user.Email,
+	})
+
+	activityLog := models.ActivityLog{
+		LogName:        "Resource",
+		Description:    fmt.Sprintf("User %s has successfully authenticated via the API service", user.Name),
+		SubjectID:      user.ID,
+		SubjectType:    "App\\Models\\User",
+		Event:          "Login",
+		CauserID:       user.ID,
+		CauserType:     "App\\Models\\User",
+		PrevProperties: json.RawMessage("[]"),
+		Properties:     properties,
+		IPAddress:      c.IP(),
+		UserAgent:      string(c.Request().Header.UserAgent()),
+		Referer:        c.Get("Referer"),
+	}
+
+	ctrl.ActivityLogRepo.Store(&activityLog)
 
 	return utils.SuccessResponse(c, "Login successful", dto.LoginResponse{
 		Token: token,
