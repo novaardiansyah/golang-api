@@ -24,6 +24,71 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/activity-logs": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a paginated list of activity logs",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "activity_logs"
+                ],
+                "summary": "List activity logs",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Items per page",
+                        "name": "per_page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.PaginatedResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/controllers.ActivityLogSwagger"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/change-password": {
             "post": {
                 "security": [
@@ -49,7 +114,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/golang-api_internal_dto.ChangePasswordRequest"
+                            "$ref": "#/definitions/dto.ChangePasswordRequest"
                         }
                     }
                 ],
@@ -59,13 +124,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/golang-api_pkg_utils.Response"
+                                    "$ref": "#/definitions/utils.Response"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/golang-api_internal_dto.LoginResponse"
+                                            "$ref": "#/definitions/dto.LoginResponse"
                                         }
                                     }
                                 }
@@ -75,13 +140,13 @@ const docTemplate = `{
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/golang-api_pkg_utils.UnauthorizedResponse"
+                            "$ref": "#/definitions/utils.UnauthorizedResponse"
                         }
                     },
                     "422": {
                         "description": "Unprocessable Entity",
                         "schema": {
-                            "$ref": "#/definitions/golang-api_pkg_utils.ValidationErrorResponse"
+                            "$ref": "#/definitions/utils.ValidationErrorResponse"
                         }
                     }
                 }
@@ -107,7 +172,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/golang-api_internal_dto.LoginRequest"
+                            "$ref": "#/definitions/dto.LoginRequest"
                         }
                     }
                 ],
@@ -117,13 +182,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/golang-api_pkg_utils.Response"
+                                    "$ref": "#/definitions/utils.Response"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/golang-api_internal_dto.LoginResponse"
+                                            "$ref": "#/definitions/dto.LoginResponse"
                                         }
                                     }
                                 }
@@ -133,13 +198,13 @@ const docTemplate = `{
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/golang-api_pkg_utils.UnauthorizedResponse"
+                            "$ref": "#/definitions/utils.UnauthorizedResponse"
                         }
                     },
                     "422": {
                         "description": "Unprocessable Entity",
                         "schema": {
-                            "$ref": "#/definitions/golang-api_pkg_utils.ValidationErrorResponse"
+                            "$ref": "#/definitions/utils.ValidationErrorResponse"
                         }
                     }
                 }
@@ -167,13 +232,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/golang-api_pkg_utils.SimpleResponse"
+                            "$ref": "#/definitions/utils.SimpleResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/golang-api_pkg_utils.UnauthorizedResponse"
+                            "$ref": "#/definitions/utils.UnauthorizedResponse"
                         }
                     }
                 }
@@ -204,7 +269,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/golang-api_internal_dto.UpdateProfileRequest"
+                            "$ref": "#/definitions/dto.UpdateProfileRequest"
                         }
                     }
                 ],
@@ -212,25 +277,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/golang-api_pkg_utils.SimpleResponse"
+                            "$ref": "#/definitions/utils.SimpleResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/golang-api_pkg_utils.SimpleErrorResponse"
+                            "$ref": "#/definitions/utils.SimpleErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/golang-api_pkg_utils.UnauthorizedResponse"
+                            "$ref": "#/definitions/utils.UnauthorizedResponse"
                         }
                     },
                     "422": {
                         "description": "Unprocessable Entity",
                         "schema": {
-                            "$ref": "#/definitions/golang-api_pkg_utils.ValidationErrorResponse"
+                            "$ref": "#/definitions/utils.ValidationErrorResponse"
                         }
                     }
                 }
@@ -260,13 +325,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/golang-api_pkg_utils.Response"
+                                    "$ref": "#/definitions/utils.Response"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/golang-api_internal_dto.ValidateTokenResponse"
+                                            "$ref": "#/definitions/dto.ValidateTokenResponse"
                                         }
                                     }
                                 }
@@ -276,7 +341,7 @@ const docTemplate = `{
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/golang-api_pkg_utils.UnauthorizedResponse"
+                            "$ref": "#/definitions/utils.UnauthorizedResponse"
                         }
                     }
                 }
@@ -315,7 +380,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/golang-api_pkg_utils.Response"
+                                    "$ref": "#/definitions/utils.Response"
                                 },
                                 {
                                     "type": "object",
@@ -323,7 +388,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/internal_controllers.FileSwagger"
+                                                "$ref": "#/definitions/controllers.FileSwagger"
                                             }
                                         }
                                     }
@@ -334,7 +399,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/golang-api_pkg_utils.Response"
+                            "$ref": "#/definitions/utils.Response"
                         }
                     }
                 }
@@ -365,7 +430,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_controllers.UpdateNotificationSettingsRequest"
+                            "$ref": "#/definitions/controllers.UpdateNotificationSettingsRequest"
                         }
                     }
                 ],
@@ -373,25 +438,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/golang-api_pkg_utils.Response"
+                            "$ref": "#/definitions/utils.Response"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/golang-api_pkg_utils.Response"
+                            "$ref": "#/definitions/utils.Response"
                         }
                     },
                     "422": {
                         "description": "Unprocessable Entity",
                         "schema": {
-                            "$ref": "#/definitions/golang-api_pkg_utils.ValidationErrorResponse"
+                            "$ref": "#/definitions/utils.ValidationErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/golang-api_pkg_utils.Response"
+                            "$ref": "#/definitions/utils.Response"
                         }
                     }
                 }
@@ -437,7 +502,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/golang-api_pkg_utils.PaginatedResponse"
+                                    "$ref": "#/definitions/utils.PaginatedResponse"
                                 },
                                 {
                                     "type": "object",
@@ -445,7 +510,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/internal_controllers.PaymentAccountSwagger"
+                                                "$ref": "#/definitions/controllers.PaymentAccountSwagger"
                                             }
                                         }
                                     }
@@ -456,7 +521,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/golang-api_pkg_utils.Response"
+                            "$ref": "#/definitions/utils.Response"
                         }
                     }
                 }
@@ -486,7 +551,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/golang-api_pkg_utils.Response"
+                                    "$ref": "#/definitions/utils.Response"
                                 },
                                 {
                                     "type": "object",
@@ -494,7 +559,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/internal_controllers.PaymentGoalSwagger"
+                                                "$ref": "#/definitions/controllers.PaymentGoalSwagger"
                                             }
                                         }
                                     }
@@ -505,7 +570,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/golang-api_pkg_utils.Response"
+                            "$ref": "#/definitions/utils.Response"
                         }
                     }
                 }
@@ -535,13 +600,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/golang-api_pkg_utils.Response"
+                                    "$ref": "#/definitions/utils.Response"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/internal_controllers.OverviewResponse"
+                                            "$ref": "#/definitions/controllers.OverviewResponse"
                                         }
                                     }
                                 }
@@ -551,7 +616,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/golang-api_pkg_utils.Response"
+                            "$ref": "#/definitions/utils.Response"
                         }
                     }
                 }
@@ -590,13 +655,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/golang-api_pkg_utils.Response"
+                                    "$ref": "#/definitions/utils.Response"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/internal_controllers.PaymentGoalSwagger"
+                                            "$ref": "#/definitions/controllers.PaymentGoalSwagger"
                                         }
                                     }
                                 }
@@ -606,13 +671,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/golang-api_pkg_utils.Response"
+                            "$ref": "#/definitions/utils.Response"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/golang-api_pkg_utils.Response"
+                            "$ref": "#/definitions/utils.Response"
                         }
                     }
                 }
@@ -688,7 +753,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/golang-api_pkg_utils.PaginatedResponse"
+                                    "$ref": "#/definitions/utils.PaginatedResponse"
                                 },
                                 {
                                     "type": "object",
@@ -696,7 +761,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/internal_controllers.PaymentSwagger"
+                                                "$ref": "#/definitions/controllers.PaymentSwagger"
                                             }
                                         }
                                     }
@@ -707,7 +772,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/golang-api_pkg_utils.Response"
+                            "$ref": "#/definitions/utils.Response"
                         }
                     }
                 }
@@ -751,13 +816,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/golang-api_pkg_utils.Response"
+                                    "$ref": "#/definitions/utils.Response"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/internal_controllers.SummaryResponse"
+                                            "$ref": "#/definitions/controllers.SummaryResponse"
                                         }
                                     }
                                 }
@@ -767,7 +832,7 @@ const docTemplate = `{
                     "422": {
                         "description": "Unprocessable Entity",
                         "schema": {
-                            "$ref": "#/definitions/golang-api_pkg_utils.ValidationErrorResponse"
+                            "$ref": "#/definitions/utils.ValidationErrorResponse"
                         }
                     }
                 }
@@ -806,13 +871,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/golang-api_pkg_utils.Response"
+                                    "$ref": "#/definitions/utils.Response"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/internal_controllers.PaymentSwagger"
+                                            "$ref": "#/definitions/controllers.PaymentSwagger"
                                         }
                                     }
                                 }
@@ -822,13 +887,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/golang-api_pkg_utils.Response"
+                            "$ref": "#/definitions/utils.Response"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/golang-api_pkg_utils.Response"
+                            "$ref": "#/definitions/utils.Response"
                         }
                     }
                 }
@@ -867,7 +932,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/golang-api_pkg_utils.Response"
+                                    "$ref": "#/definitions/utils.Response"
                                 },
                                 {
                                     "type": "object",
@@ -875,7 +940,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/internal_controllers.AttachmentResponse"
+                                                "$ref": "#/definitions/controllers.AttachmentResponse"
                                             }
                                         }
                                     }
@@ -886,7 +951,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/golang-api_pkg_utils.Response"
+                            "$ref": "#/definitions/utils.Response"
                         }
                     }
                 }
@@ -932,7 +997,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/golang-api_pkg_utils.PaginatedResponse"
+                                    "$ref": "#/definitions/utils.PaginatedResponse"
                                 },
                                 {
                                     "type": "object",
@@ -940,7 +1005,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/internal_controllers.UserSwagger"
+                                                "$ref": "#/definitions/controllers.UserSwagger"
                                             }
                                         }
                                     }
@@ -951,7 +1016,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/golang-api_pkg_utils.Response"
+                            "$ref": "#/definitions/utils.Response"
                         }
                     }
                 }
@@ -990,13 +1055,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/golang-api_pkg_utils.Response"
+                                    "$ref": "#/definitions/utils.Response"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/internal_controllers.UserSwagger"
+                                            "$ref": "#/definitions/controllers.UserSwagger"
                                         }
                                     }
                                 }
@@ -1006,13 +1071,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/golang-api_pkg_utils.Response"
+                            "$ref": "#/definitions/utils.Response"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/golang-api_pkg_utils.Response"
+                            "$ref": "#/definitions/utils.Response"
                         }
                     }
                 }
@@ -1020,200 +1085,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "golang-api_internal_dto.ChangePasswordRequest": {
-            "type": "object",
-            "required": [
-                "current_password",
-                "new_password",
-                "new_password_confirmation"
-            ],
-            "properties": {
-                "current_password": {
-                    "type": "string",
-                    "minLength": 6
-                },
-                "new_password": {
-                    "type": "string",
-                    "minLength": 6
-                },
-                "new_password_confirmation": {
-                    "type": "string",
-                    "minLength": 6
-                }
-            }
-        },
-        "golang-api_internal_dto.LoginRequest": {
-            "type": "object",
-            "required": [
-                "email",
-                "password"
-            ],
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string",
-                    "minLength": 6
-                }
-            }
-        },
-        "golang-api_internal_dto.LoginResponse": {
-            "type": "object",
-            "properties": {
-                "token": {
-                    "type": "string"
-                }
-            }
-        },
-        "golang-api_internal_dto.UpdateProfileRequest": {
-            "type": "object",
-            "required": [
-                "email",
-                "name"
-            ],
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string",
-                    "minLength": 3
-                }
-            }
-        },
-        "golang-api_internal_dto.ValidateTokenResponse": {
-            "type": "object",
-            "properties": {
-                "user": {
-                    "$ref": "#/definitions/golang-api_internal_dto.ValidateTokenUserResponse"
-                }
-            }
-        },
-        "golang-api_internal_dto.ValidateTokenUserResponse": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                }
-            }
-        },
-        "golang-api_pkg_utils.Meta": {
-            "type": "object",
-            "properties": {
-                "current_page": {
-                    "type": "integer"
-                },
-                "has_more_pages": {
-                    "type": "boolean"
-                },
-                "items_on_page": {
-                    "type": "integer"
-                },
-                "per_page": {
-                    "type": "integer"
-                },
-                "total_pages": {
-                    "type": "integer"
-                },
-                "total_records": {
-                    "type": "integer"
-                }
-            }
-        },
-        "golang-api_pkg_utils.PaginatedResponse": {
-            "type": "object",
-            "properties": {
-                "data": {},
-                "message": {
-                    "type": "string"
-                },
-                "meta": {
-                    "$ref": "#/definitions/golang-api_pkg_utils.Meta"
-                },
-                "success": {
-                    "type": "boolean",
-                    "default": true
-                }
-            }
-        },
-        "golang-api_pkg_utils.Response": {
-            "type": "object",
-            "properties": {
-                "data": {},
-                "message": {
-                    "type": "string"
-                },
-                "success": {
-                    "type": "boolean"
-                }
-            }
-        },
-        "golang-api_pkg_utils.SimpleErrorResponse": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                },
-                "success": {
-                    "type": "boolean",
-                    "default": false
-                }
-            }
-        },
-        "golang-api_pkg_utils.SimpleResponse": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                },
-                "success": {
-                    "type": "boolean",
-                    "default": true
-                }
-            }
-        },
-        "golang-api_pkg_utils.UnauthorizedResponse": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string",
-                    "default": "Unauthorized: reason..."
-                },
-                "success": {
-                    "type": "boolean",
-                    "default": false
-                }
-            }
-        },
-        "golang-api_pkg_utils.ValidationErrorResponse": {
-            "type": "object",
-            "properties": {
-                "errors": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "message": {
-                    "type": "string"
-                },
-                "success": {
-                    "type": "boolean",
-                    "default": false
-                }
-            }
-        },
-        "internal_controllers.AccountInfoSwagger": {
+        "controllers.AccountInfoSwagger": {
             "type": "object",
             "properties": {
                 "id": {
@@ -1224,7 +1096,72 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_controllers.AttachmentResponse": {
+        "controllers.ActivityLogSwagger": {
+            "type": "object",
+            "properties": {
+                "batch_uuid": {
+                    "type": "string"
+                },
+                "causer_id": {
+                    "type": "integer"
+                },
+                "causer_type": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "event": {
+                    "type": "string"
+                },
+                "geolocation": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "ip_address": {
+                    "type": "string"
+                },
+                "log_name": {
+                    "type": "string"
+                },
+                "postal": {
+                    "type": "string"
+                },
+                "prev_properties": {
+                    "type": "string"
+                },
+                "properties": {
+                    "type": "string"
+                },
+                "referer": {
+                    "type": "string"
+                },
+                "region": {
+                    "type": "string"
+                },
+                "subject_id": {
+                    "type": "integer"
+                },
+                "subject_type": {
+                    "type": "string"
+                },
+                "timezone": {
+                    "type": "string"
+                },
+                "user_agent": {
+                    "type": "string"
+                }
+            }
+        },
+        "controllers.AttachmentResponse": {
             "type": "object",
             "properties": {
                 "extension": {
@@ -1243,14 +1180,14 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "original": {
-                    "$ref": "#/definitions/internal_controllers.OriginalAttachment"
+                    "$ref": "#/definitions/controllers.OriginalAttachment"
                 },
                 "url": {
                     "type": "string"
                 }
             }
         },
-        "internal_controllers.FileSwagger": {
+        "controllers.FileSwagger": {
             "type": "object",
             "properties": {
                 "code": {
@@ -1273,7 +1210,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_controllers.FormattedAccountSwagger": {
+        "controllers.FormattedAccountSwagger": {
             "type": "object",
             "properties": {
                 "deposit": {
@@ -1284,7 +1221,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_controllers.FormattedGoalSwagger": {
+        "controllers.FormattedGoalSwagger": {
             "type": "object",
             "properties": {
                 "amount": {
@@ -1304,7 +1241,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_controllers.OriginalAttachment": {
+        "controllers.OriginalAttachment": {
             "type": "object",
             "properties": {
                 "formatted_size": {
@@ -1315,7 +1252,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_controllers.OverviewResponse": {
+        "controllers.OverviewResponse": {
             "type": "object",
             "properties": {
                 "completed": {
@@ -1329,14 +1266,14 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_controllers.PaymentAccountSwagger": {
+        "controllers.PaymentAccountSwagger": {
             "type": "object",
             "properties": {
                 "deposit": {
                     "type": "integer"
                 },
                 "formatted": {
-                    "$ref": "#/definitions/internal_controllers.FormattedAccountSwagger"
+                    "$ref": "#/definitions/controllers.FormattedAccountSwagger"
                 },
                 "id": {
                     "type": "integer"
@@ -1349,7 +1286,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_controllers.PaymentGoalSwagger": {
+        "controllers.PaymentGoalSwagger": {
             "type": "object",
             "properties": {
                 "amount": {
@@ -1365,7 +1302,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "formatted": {
-                    "$ref": "#/definitions/internal_controllers.FormattedGoalSwagger"
+                    "$ref": "#/definitions/controllers.FormattedGoalSwagger"
                 },
                 "id": {
                     "type": "integer"
@@ -1399,14 +1336,14 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_controllers.PaymentSwagger": {
+        "controllers.PaymentSwagger": {
             "type": "object",
             "properties": {
                 "account": {
-                    "$ref": "#/definitions/internal_controllers.AccountInfoSwagger"
+                    "$ref": "#/definitions/controllers.AccountInfoSwagger"
                 },
                 "account_to": {
-                    "$ref": "#/definitions/internal_controllers.AccountInfoSwagger"
+                    "$ref": "#/definitions/controllers.AccountInfoSwagger"
                 },
                 "amount": {
                     "type": "integer"
@@ -1467,7 +1404,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_controllers.SummaryPercents": {
+        "controllers.SummaryPercents": {
             "type": "object",
             "properties": {
                 "expenses": {
@@ -1484,7 +1421,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_controllers.SummaryPeriod": {
+        "controllers.SummaryPeriod": {
             "type": "object",
             "properties": {
                 "end_date": {
@@ -1495,7 +1432,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_controllers.SummaryResponse": {
+        "controllers.SummaryResponse": {
             "type": "object",
             "properties": {
                 "expenses": {
@@ -1508,10 +1445,10 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "percents": {
-                    "$ref": "#/definitions/internal_controllers.SummaryPercents"
+                    "$ref": "#/definitions/controllers.SummaryPercents"
                 },
                 "period": {
-                    "$ref": "#/definitions/internal_controllers.SummaryPeriod"
+                    "$ref": "#/definitions/controllers.SummaryPeriod"
                 },
                 "scheduled_expense": {
                     "type": "integer"
@@ -1530,7 +1467,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_controllers.UpdateNotificationSettingsRequest": {
+        "controllers.UpdateNotificationSettingsRequest": {
             "type": "object",
             "properties": {
                 "has_allow_notification": {
@@ -1541,7 +1478,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_controllers.UserSwagger": {
+        "controllers.UserSwagger": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -1567,6 +1504,199 @@ const docTemplate = `{
                 },
                 "updated_at": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.ChangePasswordRequest": {
+            "type": "object",
+            "required": [
+                "current_password",
+                "new_password",
+                "new_password_confirmation"
+            ],
+            "properties": {
+                "current_password": {
+                    "type": "string",
+                    "minLength": 6
+                },
+                "new_password": {
+                    "type": "string",
+                    "minLength": 6
+                },
+                "new_password_confirmation": {
+                    "type": "string",
+                    "minLength": 6
+                }
+            }
+        },
+        "dto.LoginRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 6
+                }
+            }
+        },
+        "dto.LoginResponse": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UpdateProfileRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "name"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 3
+                }
+            }
+        },
+        "dto.ValidateTokenResponse": {
+            "type": "object",
+            "properties": {
+                "user": {
+                    "$ref": "#/definitions/dto.ValidateTokenUserResponse"
+                }
+            }
+        },
+        "dto.ValidateTokenUserResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "utils.Meta": {
+            "type": "object",
+            "properties": {
+                "current_page": {
+                    "type": "integer"
+                },
+                "has_more_pages": {
+                    "type": "boolean"
+                },
+                "items_on_page": {
+                    "type": "integer"
+                },
+                "per_page": {
+                    "type": "integer"
+                },
+                "total_pages": {
+                    "type": "integer"
+                },
+                "total_records": {
+                    "type": "integer"
+                }
+            }
+        },
+        "utils.PaginatedResponse": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "message": {
+                    "type": "string"
+                },
+                "meta": {
+                    "$ref": "#/definitions/utils.Meta"
+                },
+                "success": {
+                    "type": "boolean",
+                    "default": true
+                }
+            }
+        },
+        "utils.Response": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "utils.SimpleErrorResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "utils.SimpleResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean",
+                    "default": true
+                }
+            }
+        },
+        "utils.UnauthorizedResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "default": "Unauthorized: reason..."
+                },
+                "success": {
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+        "utils.ValidationErrorResponse": {
+            "type": "object",
+            "properties": {
+                "errors": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean",
+                    "default": false
                 }
             }
         }

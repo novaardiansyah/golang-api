@@ -48,3 +48,4 @@ public/images/*/*
 
 deploy/
 setup.sh
+Makefile
