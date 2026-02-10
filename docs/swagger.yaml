@@ -308,6 +308,51 @@ definitions:
       token:
         type: string
     type: object
+  dto.StoreActivityLogRequest:
+    properties:
+      batch_uuid:
+        type: string
+      causer_id:
+        type: integer
+      causer_type:
+        type: string
+      city:
+        type: string
+      country:
+        type: string
+      description:
+        type: string
+      event:
+        type: string
+      geolocation:
+        type: string
+      ip_address:
+        type: string
+      log_name:
+        type: string
+      postal:
+        type: string
+      prev_properties:
+        items:
+          type: integer
+        type: array
+      properties:
+        items:
+          type: integer
+        type: array
+      referer:
+        type: string
+      region:
+        type: string
+      subject_id:
+        type: integer
+      subject_type:
+        type: string
+      timezone:
+        type: string
+      user_agent:
+        type: string
+    type: object
   dto.UpdateProfileRequest:
     properties:
       email:
@@ -457,6 +502,37 @@ paths:
       security:
       - BearerAuth: []
       summary: List activity logs
+      tags:
+      - activity_logs
+    post:
+      consumes:
+      - application/json
+      description: Store a new activity log
+      parameters:
+      - description: Activity log
+        in: body
+        name: activity_log
+        required: true
+        schema:
+          $ref: '#/definitions/dto.StoreActivityLogRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.ValidationErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Store a new activity log
       tags:
       - activity_logs
   /auth/change-password:

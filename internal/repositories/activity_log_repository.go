@@ -33,3 +33,7 @@ func (r *ActivityLogRepository) FindAllPaginated(page int, limit int, search str
 
 	return activityLogs, err
 }
+
+func (r *ActivityLogRepository) Store(activityLog *models.ActivityLog) error {
+	return r.db.Create(activityLog).Error
+}

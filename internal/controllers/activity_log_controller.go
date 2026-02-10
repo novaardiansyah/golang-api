@@ -13,11 +13,14 @@
 package controllers
 
 import (
+	"golang-api/internal/dto"
+	"golang-api/internal/models"
 	"golang-api/internal/repositories"
 	"golang-api/pkg/utils"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/thedevsaddam/govalidator"
 	"gorm.io/gorm"
 )
 
@@ -71,4 +74,59 @@ func (ctrl *ActivityLogController) Index(c *fiber.Ctx) error {
 	}
 
 	return utils.PaginatedSuccessResponse(c, "Activity logs retrieved successfully", activityLogs, page, perPage, total, len(activityLogs))
+}
+
+// Store godoc
+// @Summary Store a new activity log
+// @Description Store a new activity log
+// @Tags activity_logs
+// @Accept json
+// @Produce json
+// @Param activity_log body dto.StoreActivityLogRequest true "Activity log"
+// @Success 201 {object} utils.Response
+// @Failure 400 {object} utils.Response
+// @Failure 422 {object} utils.ValidationErrorResponse
+// @Router /activity-logs [post]
+// @Security BearerAuth
+func (ctrl *ActivityLogController) Store(c *fiber.Ctx) error {
+	var request dto.StoreActivityLogRequest
+
+	rules := govalidator.MapData{
+		"log_name":    []string{"required"},
+		"description": []string{"required"},
+		"event":       []string{"required"},
+	}
+
+	errs := utils.ValidateJSON(c, &request, rules)
+	if errs != nil {
+		return utils.ValidationError(c, errs)
+	}
+
+	activityLog := models.ActivityLog{
+		LogName:        request.LogName,
+		Description:    request.Description,
+		SubjectID:      request.SubjectID,
+		SubjectType:    request.SubjectType,
+		Event:          request.Event,
+		CauserID:       request.CauserID,
+		CauserType:     request.CauserType,
+		PrevProperties: request.PrevProperties,
+		Properties:     request.Properties,
+		BatchUUID:      request.BatchUUID,
+		IPAddress:      request.IPAddress,
+		Country:        request.Country,
+		City:           request.City,
+		Region:         request.Region,
+		Postal:         request.Postal,
+		Geolocation:    request.Geolocation,
+		Timezone:       request.Timezone,
+		UserAgent:      request.UserAgent,
+		Referer:        request.Referer,
+	}
+
+	if err := ctrl.repo.Store(&activityLog); err != nil {
+		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to store activity log")
+	}
+
+	return utils.SuccessResponse(c, "Activity log stored successfully", activityLog)
 }
