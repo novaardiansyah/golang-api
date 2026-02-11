@@ -55,4 +55,6 @@ func SetupRoutes(app *fiber.App) {
 	PaymentGoalRoutes(api, db)
 	PaymentAccountRoutes(api, db)
 	ActivityLogRoutes(api, db)
+	UptimeMonitorRoutes(api, db)
+	UptimeMonitorLogRoutes(api, db)
 }

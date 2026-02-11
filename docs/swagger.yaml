@@ -257,6 +257,56 @@ definitions:
       notification_token:
         type: string
     type: object
+  controllers.UptimeMonitorLogSwagger:
+    properties:
+      checked_at:
+        type: string
+      error_message:
+        type: string
+      id:
+        type: integer
+      is_healthy:
+        type: boolean
+      response_time_ms:
+        type: integer
+      status_code:
+        type: integer
+      uptime_monitor_id:
+        type: integer
+    type: object
+  controllers.UptimeMonitorSwagger:
+    properties:
+      code:
+        type: string
+      created_at:
+        type: string
+      healthy_checks:
+        type: integer
+      id:
+        type: integer
+      interval:
+        type: integer
+      is_active:
+        type: boolean
+      last_checked_at:
+        type: string
+      last_healthy_at:
+        type: string
+      last_unhealthy_at:
+        type: string
+      name:
+        type: string
+      next_check_at:
+        type: string
+      total_checks:
+        type: integer
+      unhealthy_checks:
+        type: integer
+      updated_at:
+        type: string
+      url:
+        type: string
+    type: object
   controllers.UserSwagger:
     properties:
       created_at:
@@ -353,6 +403,44 @@ definitions:
       user_agent:
         type: string
     type: object
+  dto.StoreUptimeMonitorLogRequest:
+    properties:
+      checked_at:
+        type: string
+      error_message:
+        type: string
+      is_healthy:
+        type: boolean
+      response_time_ms:
+        type: integer
+      status_code:
+        type: integer
+      uptime_monitor_id:
+        type: integer
+    required:
+    - checked_at
+    - response_time_ms
+    - status_code
+    - uptime_monitor_id
+    type: object
+  dto.StoreUptimeMonitorRequest:
+    properties:
+      code:
+        type: string
+      interval:
+        type: integer
+      is_active:
+        type: boolean
+      name:
+        type: string
+      url:
+        type: string
+    required:
+    - code
+    - interval
+    - name
+    - url
+    type: object
   dto.UpdateProfileRequest:
     properties:
       email:
@@ -363,6 +451,19 @@ definitions:
     required:
     - email
     - name
+    type: object
+  dto.UpdateUptimeMonitorRequest:
+    properties:
+      code:
+        type: string
+      interval:
+        type: integer
+      is_active:
+        type: boolean
+      name:
+        type: string
+      url:
+        type: string
     type: object
   dto.ValidateTokenResponse:
     properties:
@@ -1054,6 +1155,273 @@ paths:
       summary: Get payment summary
       tags:
       - payments
+  /uptime-monitor-logs:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of uptime monitor logs
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: per_page
+        type: integer
+      - description: Filter by monitor ID
+        in: query
+        name: monitor_id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.PaginatedResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/controllers.UptimeMonitorLogSwagger'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List uptime monitor logs
+      tags:
+      - uptime_monitor_logs
+    post:
+      consumes:
+      - application/json
+      description: Store a new uptime monitor log
+      parameters:
+      - description: Log data
+        in: body
+        name: log
+        required: true
+        schema:
+          $ref: '#/definitions/dto.StoreUptimeMonitorLogRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/controllers.UptimeMonitorLogSwagger'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Store a new uptime monitor log
+      tags:
+      - uptime_monitor_logs
+  /uptime-monitor-logs/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an existing uptime monitor log
+      parameters:
+      - description: Log ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete an uptime monitor log
+      tags:
+      - uptime_monitor_logs
+    get:
+      consumes:
+      - application/json
+      description: Get a single uptime monitor log by ID
+      parameters:
+      - description: Log ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/controllers.UptimeMonitorLogSwagger'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get uptime monitor log details
+      tags:
+      - uptime_monitor_logs
+  /uptime-monitors:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of uptime monitors
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: per_page
+        type: integer
+      - description: Search by name or code
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.PaginatedResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/controllers.UptimeMonitorSwagger'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: List uptime monitors
+      tags:
+      - uptime_monitors
+    post:
+      consumes:
+      - application/json
+      description: Store a new uptime monitor
+      parameters:
+      - description: Monitor data
+        in: body
+        name: monitor
+        required: true
+        schema:
+          $ref: '#/definitions/dto.StoreUptimeMonitorRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/controllers.UptimeMonitorSwagger'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Store a new uptime monitor
+      tags:
+      - uptime_monitors
+  /uptime-monitors/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an existing uptime monitor
+      parameters:
+      - description: Monitor ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Delete an uptime monitor
+      tags:
+      - uptime_monitors
+    get:
+      consumes:
+      - application/json
+      description: Get a single uptime monitor by ID
+      parameters:
+      - description: Monitor ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/controllers.UptimeMonitorSwagger'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get uptime monitor details
+      tags:
+      - uptime_monitors
+    put:
+      consumes:
+      - application/json
+      description: Update an existing uptime monitor
+      parameters:
+      - description: Monitor ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Monitor data
+        in: body
+        name: monitor
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateUptimeMonitorRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/controllers.UptimeMonitorSwagger'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Update an uptime monitor
+      tags:
+      - uptime_monitors
   /users:
     get:
       consumes:

@@ -112,3 +112,31 @@ type ActivityLogSwagger struct {
 	UserAgent      string `json:"user_agent"`
 	Referer        string `json:"referer"`
 }
+
+type UptimeMonitorSwagger struct {
+	ID              uint       `json:"id"`
+	Code            string     `json:"code"`
+	URL             string     `json:"url"`
+	Name            string     `json:"name"`
+	Interval        int        `json:"interval"`
+	IsActive        bool       `json:"is_active"`
+	LastCheckedAt   *time.Time `json:"last_checked_at"`
+	LastHealthyAt   *time.Time `json:"last_healthy_at"`
+	LastUnhealthyAt *time.Time `json:"last_unhealthy_at"`
+	TotalChecks     int        `json:"total_checks"`
+	HealthyChecks   int        `json:"healthy_checks"`
+	UnhealthyChecks int        `json:"unhealthy_checks"`
+	NextCheckAt     *time.Time `json:"next_check_at"`
+	CreatedAt       time.Time  `json:"created_at"`
+	UpdatedAt       time.Time  `json:"updated_at"`
+}
+
+type UptimeMonitorLogSwagger struct {
+	ID              uint      `json:"id"`
+	UptimeMonitorID uint      `json:"uptime_monitor_id"`
+	StatusCode      int       `json:"status_code"`
+	ResponseTimeMs  int       `json:"response_time_ms"`
+	IsHealthy       bool      `json:"is_healthy"`
+	ErrorMessage    string    `json:"error_message"`
+	CheckedAt       time.Time `json:"checked_at"`
+}
