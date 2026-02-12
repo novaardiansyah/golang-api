@@ -1318,6 +1318,34 @@ const docTemplate = `{
                 }
             }
         },
+        "/uptime-monitors/run-checks": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Run uptime monitor checks for all active monitors that are due",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "uptime_monitors"
+                ],
+                "summary": "Run uptime monitor checks",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/uptime-monitors/{id}": {
             "get": {
                 "security": [

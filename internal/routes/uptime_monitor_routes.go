@@ -13,6 +13,7 @@ func UptimeMonitorRoutes(api fiber.Router, db *gorm.DB) {
 	monitors := api.Group("/uptime-monitors", middleware.Auth(db))
 
 	monitors.Get("/", ctrl.Index)
+	monitors.Post("/run-checks", ctrl.RunChecks)
 	monitors.Post("/", ctrl.Store)
 	monitors.Get("/:id", ctrl.Show)
 	monitors.Put("/:id", ctrl.Update)

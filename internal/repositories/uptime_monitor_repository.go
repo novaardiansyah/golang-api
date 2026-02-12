@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"golang-api/internal/models"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -51,4 +52,13 @@ func (r *UptimeMonitorRepository) Update(monitor *models.UptimeMonitor) error {
 
 func (r *UptimeMonitorRepository) Delete(id uint) error {
 	return r.db.Delete(&models.UptimeMonitor{}, id).Error
+}
+
+func (r *UptimeMonitorRepository) FindDueForCheck() ([]models.UptimeMonitor, error) {
+	var monitors []models.UptimeMonitor
+	now := time.Now()
+	err := r.db.Where("is_active = ?", true).
+		Where("next_check_at IS NULL OR next_check_at <= ?", now).
+		Find(&monitors).Error
+	return monitors, err
 }

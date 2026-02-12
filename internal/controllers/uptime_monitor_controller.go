@@ -16,6 +16,7 @@ import (
 	"golang-api/internal/dto"
 	"golang-api/internal/models"
 	"golang-api/internal/repositories"
+	"golang-api/internal/service"
 	"golang-api/pkg/utils"
 	"strconv"
 
@@ -25,13 +26,29 @@ import (
 )
 
 type UptimeMonitorController struct {
-	repo *repositories.UptimeMonitorRepository
+	repo    *repositories.UptimeMonitorRepository
+	service *service.UptimeMonitorService
 }
 
 func NewUptimeMonitorController(db *gorm.DB) *UptimeMonitorController {
 	return &UptimeMonitorController{
-		repo: repositories.NewUptimeMonitorRepository(db),
+		repo:    repositories.NewUptimeMonitorRepository(db),
+		service: service.NewUptimeMonitorService(db),
 	}
+}
+
+// RunChecks godoc
+// @Summary Run uptime monitor checks
+// @Description Run uptime monitor checks for all active monitors that are due
+// @Tags uptime_monitors
+// @Accept json
+// @Produce json
+// @Success 200 {object} utils.Response
+// @Router /uptime-monitors/run-checks [post]
+// @Security BearerAuth
+func (ctrl *UptimeMonitorController) RunChecks(c *fiber.Ctx) error {
+	results := ctrl.service.RunScheduledChecks()
+	return utils.SuccessResponse(c, "Uptime monitor checks completed", results)
 }
 
 // Index godoc

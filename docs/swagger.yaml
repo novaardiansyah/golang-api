@@ -1422,6 +1422,23 @@ paths:
       summary: Update an uptime monitor
       tags:
       - uptime_monitors
+  /uptime-monitors/run-checks:
+    post:
+      consumes:
+      - application/json
+      description: Run uptime monitor checks for all active monitors that are due
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Run uptime monitor checks
+      tags:
+      - uptime_monitors
   /users:
     get:
       consumes:

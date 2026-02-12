@@ -25,6 +25,7 @@ type UptimeMonitor struct {
 	Name            string             `json:"name"`
 	Interval        int                `json:"interval"`
 	IsActive        bool               `json:"is_active"`
+	Status          string             `json:"status"`
 	LastCheckedAt   *time.Time         `json:"last_checked_at"`
 	LastHealthyAt   *time.Time         `json:"last_healthy_at"`
 	LastUnhealthyAt *time.Time         `json:"last_unhealthy_at"`
