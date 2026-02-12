@@ -45,8 +45,8 @@ func (s *UptimeMonitorService) Check(monitor *models.UptimeMonitor) bool {
 	result = s.generateErrorMessage(result)
 
 	s.createLog(monitor, result)
-	s.updateMonitorStats(monitor, result)
-	s.monitorRepo.Update(monitor)
+	fields := s.updateMonitorStats(monitor, result)
+	s.monitorRepo.UpdateFields(monitor.ID, fields)
 
 	return result.IsHealthy
 }
@@ -116,27 +116,43 @@ func (s *UptimeMonitorService) createLog(monitor *models.UptimeMonitor, result c
 	s.logRepo.Store(log)
 }
 
-func (s *UptimeMonitorService) updateMonitorStats(monitor *models.UptimeMonitor, result checkResult) {
+func (s *UptimeMonitorService) updateMonitorStats(monitor *models.UptimeMonitor, result checkResult) map[string]interface{} {
 	now := time.Now()
-
-	monitor.Status = result.Status
-	monitor.TotalChecks = monitor.TotalChecks + 1
-	monitor.LastCheckedAt = &now
-
 	nextCheck := now.Add(time.Duration(monitor.Interval) * time.Second)
-	monitor.NextCheckAt = &nextCheck
+
+	fields := map[string]interface{}{
+		"status":          result.Status,
+		"total_checks":    monitor.TotalChecks + 1,
+		"last_checked_at": &now,
+		"next_check_at":   &nextCheck,
+	}
 
 	if result.IsHealthy {
-		monitor.HealthyChecks = monitor.HealthyChecks + 1
-		monitor.LastHealthyAt = &now
+		fields["healthy_checks"] = monitor.HealthyChecks + 1
+		fields["last_healthy_at"] = &now
 	} else {
-		monitor.UnhealthyChecks = monitor.UnhealthyChecks + 1
-		monitor.LastUnhealthyAt = &now
+		fields["unhealthy_checks"] = monitor.UnhealthyChecks + 1
+		fields["last_unhealthy_at"] = &now
 	}
 
 	if result.Status == StatusSlow {
+		fields["last_unhealthy_at"] = &now
+	}
+
+	monitor.Status = result.Status
+	monitor.TotalChecks++
+	monitor.LastCheckedAt = &now
+	monitor.NextCheckAt = &nextCheck
+
+	if result.IsHealthy {
+		monitor.HealthyChecks++
+		monitor.LastHealthyAt = &now
+	} else {
+		monitor.UnhealthyChecks++
 		monitor.LastUnhealthyAt = &now
 	}
+
+	return fields
 }
 
 func (s *UptimeMonitorService) RunScheduledChecks() map[string]int {
@@ -146,18 +162,20 @@ func (s *UptimeMonitorService) RunScheduledChecks() map[string]int {
 		"unhealthy": 0,
 	}
 
-	monitors, err := s.monitorRepo.FindDueForCheck()
-	if err != nil {
-		return results
-	}
-
-	for i := range monitors {
-		results["total"]++
-		if s.Check(&monitors[i]) {
-			results["healthy"]++
-		} else {
-			results["unhealthy"]++
+	err := s.monitorRepo.ProcessDueForCheck(50, func(monitors []models.UptimeMonitor) error {
+		for i := range monitors {
+			results["total"]++
+			if s.Check(&monitors[i]) {
+				results["healthy"]++
+			} else {
+				results["unhealthy"]++
+			}
 		}
+		return nil
+	})
+
+	if err != nil {
+		// Log error if needed
 	}
 
 	return results

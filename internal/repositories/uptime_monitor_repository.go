@@ -50,6 +50,10 @@ func (r *UptimeMonitorRepository) Update(monitor *models.UptimeMonitor) error {
 	return r.db.Save(monitor).Error
 }
 
+func (r *UptimeMonitorRepository) UpdateFields(id uint, fields map[string]interface{}) error {
+	return r.db.Model(&models.UptimeMonitor{}).Where("id = ?", id).Updates(fields).Error
+}
+
 func (r *UptimeMonitorRepository) Delete(id uint) error {
 	return r.db.Delete(&models.UptimeMonitor{}, id).Error
 }
@@ -61,4 +65,18 @@ func (r *UptimeMonitorRepository) FindDueForCheck() ([]models.UptimeMonitor, err
 		Where("next_check_at IS NULL OR next_check_at <= ?", now).
 		Find(&monitors).Error
 	return monitors, err
+}
+
+func (r *UptimeMonitorRepository) ProcessDueForCheck(batchSize int, callback func(monitors []models.UptimeMonitor) error) error {
+	now := time.Now()
+	return r.db.Model(&models.UptimeMonitor{}).
+		Where("is_active = ?", true).
+		Where("next_check_at IS NULL OR next_check_at <= ?", now).
+		FindInBatches(&[]models.UptimeMonitor{}, batchSize, func(tx *gorm.DB, batch int) error {
+			var monitors []models.UptimeMonitor
+			if err := tx.Find(&monitors).Error; err != nil {
+				return err
+			}
+			return callback(monitors)
+		}).Error
 }
