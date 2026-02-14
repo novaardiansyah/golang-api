@@ -49,3 +49,5 @@ public/images/*/*
 deploy/
 setup.sh
 Makefile
+.opencode/
+AGENTS.md

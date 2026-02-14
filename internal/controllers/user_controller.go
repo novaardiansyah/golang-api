@@ -25,7 +25,10 @@ func NewUserController(repo *repositories.UserRepository) *UserController {
 // @Param page query int false "Page number" default(1)
 // @Param per_page query int false "Items per page" default(15)
 // @Success 200 {object} utils.PaginatedResponse{data=[]UserSwagger}
-// @Failure 500 {object} utils.Response
+// @Failure 400 {object} utils.SimpleErrorResponse
+// @Failure 401 {object} utils.UnauthorizedResponse
+// @Failure 404 {object} utils.SimpleErrorResponse
+// @Failure 500 {object} utils.SimpleErrorResponse
 // @Router /users [get]
 // @Security BearerAuth
 func (ctrl *UserController) Index(c *fiber.Ctx) error {
@@ -60,8 +63,10 @@ func (ctrl *UserController) Index(c *fiber.Ctx) error {
 // @Produce json
 // @Param id path int true "User ID"
 // @Success 200 {object} utils.Response{data=UserSwagger}
-// @Failure 400 {object} utils.Response
-// @Failure 404 {object} utils.Response
+// @Failure 400 {object} utils.SimpleErrorResponse
+// @Failure 401 {object} utils.UnauthorizedResponse
+// @Failure 404 {object} utils.SimpleErrorResponse
+// @Failure 500 {object} utils.SimpleErrorResponse
 // @Router /users/{id} [get]
 // @Security BearerAuth
 func (ctrl *UserController) Show(c *fiber.Ctx) error {
@@ -71,6 +76,30 @@ func (ctrl *UserController) Show(c *fiber.Ctx) error {
 	}
 
 	user, err := ctrl.repo.FindByID(uint(id))
+	if err != nil {
+		return utils.ErrorResponse(c, fiber.StatusNotFound, "User not found")
+	}
+
+	return utils.SuccessResponse(c, "User retrieved successfully", user)
+}
+
+// ShowMe godoc
+// @Summary Get current user details
+// @Description Get detailed information about the authenticated user
+// @Tags users
+// @Accept json
+// @Produce json
+// @Success 200 {object} utils.Response{data=UserSwagger}
+// @Failure 400 {object} utils.SimpleErrorResponse
+// @Failure 401 {object} utils.UnauthorizedResponse
+// @Failure 404 {object} utils.SimpleErrorResponse
+// @Failure 500 {object} utils.SimpleErrorResponse
+// @Router /users/me [get]
+// @Security BearerAuth
+func (ctrl *UserController) ShowMe(c *fiber.Ctx) error {
+	userId := c.Locals("user_id").(uint)
+
+	user, err := ctrl.repo.FindByID(userId)
 	if err != nil {
 		return utils.ErrorResponse(c, fiber.StatusNotFound, "User not found")
 	}

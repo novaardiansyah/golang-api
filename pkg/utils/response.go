@@ -28,7 +28,7 @@ type SimpleErrorResponse struct {
 
 type UnauthorizedResponse struct {
 	Success bool   `json:"success" default:"false"`
-	Message string `json:"message" default:"Unauthorized: reason..."`
+	Message string `json:"message" default:"Unauthorized: invalid token..."`
 }
 
 type PaginatedResponse struct {

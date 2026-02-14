@@ -7,7 +7,8 @@ type UserSwagger struct {
 	Name                 string    `json:"name"`
 	Email                string    `json:"email"`
 	HasAllowNotification *bool     `json:"has_allow_notification"`
-	NotificationToken    *string   `json:"notification_token,omitempty"`
+	NotificationToken    *string   `json:"-"`
+	AvatarUrl            *string   `json:"avatar_url"`
 	CreatedAt            time.Time `json:"created_at"`
 	UpdatedAt            time.Time `json:"updated_at"`
 	DeletedAt            *string   `json:"deleted_at,omitempty"`

@@ -15,5 +15,6 @@ func UserRoutes(api fiber.Router, db *gorm.DB) {
 
 	users := api.Group("/users", middleware.Auth(db))
 	users.Get("/", userController.Index)
+	users.Get("/me", userController.ShowMe)
 	users.Get("/:id", userController.Show)
 }

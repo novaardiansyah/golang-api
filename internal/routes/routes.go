@@ -4,6 +4,7 @@ import (
 	"golang-api/internal/config"
 	"golang-api/internal/middleware"
 	"golang-api/pkg/utils"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/swagger"
@@ -23,6 +24,10 @@ func SetupRoutes(app *fiber.App) {
 		return c.JSON(fiber.Map{
 			"success": true,
 			"message": "API is running",
+			"data": map[string]any{
+				"timestamp": time.Now().Format("2006-01-02 15:04:05"),
+				"timezone":  "Asia/Jakarta",
+			},
 		})
 	})
 

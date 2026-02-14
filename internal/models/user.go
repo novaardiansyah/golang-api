@@ -13,7 +13,8 @@ type User struct {
 	Email                string         `gorm:"size:255;uniqueIndex;not null" json:"email"`
 	Password             string         `gorm:"size:255;not null" json:"-"`
 	HasAllowNotification *bool          `gorm:"default:false" json:"has_allow_notification"`
-	NotificationToken    *string        `gorm:"size:255" json:"notification_token,omitempty"`
+	NotificationToken    *string        `gorm:"size:255" json:"-"`
+	AvatarUrl            *string        `gorm:"size:255" json:"avatar_url"`
 	CreatedAt            time.Time      `json:"created_at"`
 	UpdatedAt            time.Time      `json:"updated_at"`
 	DeletedAt            gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty" swaggertype:"string"`
