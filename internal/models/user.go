@@ -4,7 +4,7 @@ import (
 	"strings"
 	"time"
 
-	"golang-api/internal/config"
+	"golang-api/pkg/utils"
 
 	"gorm.io/gorm"
 )
@@ -37,7 +37,7 @@ func (u User) GetAvatarUrl() *string {
 	if strings.HasPrefix(*u.AvatarUrl, "https") {
 		return u.AvatarUrl
 	}
-	fullUrl := config.MainUrl + "/storage/" + *u.AvatarUrl
+	fullUrl := utils.GetExternalUrl("main", "storage/"+*u.AvatarUrl)
 	return &fullUrl
 }
 
