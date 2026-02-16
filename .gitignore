@@ -51,3 +51,4 @@ setup.sh
 Makefile
 .opencode/
 AGENTS.md
+deploy/

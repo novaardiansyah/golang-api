@@ -37,7 +37,9 @@ func NewPaymentAccountController(repo *repositories.PaymentAccountRepository) *P
 // @Param page query int false "Page number" default(1)
 // @Param per_page query int false "Items per page" default(10)
 // @Success 200 {object} utils.PaginatedResponse{data=[]PaymentAccountSwagger}
-// @Failure 400 {object} utils.Response
+// @Failure 401 {object} utils.UnauthorizedResponse
+// @Failure 400 {object} utils.SimpleErrorResponse
+// @Failure 500 {object} utils.SimpleErrorResponse
 // @Router /payment-accounts [get]
 // @Security BearerAuth
 func (ctrl *PaymentAccountController) Index(c *fiber.Ctx) error {

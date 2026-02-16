@@ -40,7 +40,7 @@ func (p *PaymentAccount) AfterFind(tx *gorm.DB) (err error) {
 	var logo string
 
 	if p.Logo != "" {
-		logo = utils.GetExternalUrl("main", "storage/"+p.Logo)
+		logo = utils.GetExternalUrl("cdn", p.Logo)
 	}
 
 	p.Formatted = Formatted{
