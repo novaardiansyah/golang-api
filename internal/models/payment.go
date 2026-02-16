@@ -21,16 +21,17 @@ type Payment struct {
 	ID                 uint            `gorm:"primaryKey" json:"id"`
 	UserID             uint            `json:"user_id"`
 	Code               string          `json:"code"`
-	Name               string          `json:"name"`
-	Date               DateOnly        `json:"date"`
-	Amount             int64           `json:"amount"`
+	Name               *string         `json:"name"`
+	Date               time.Time       `json:"date"`
+	Amount             *int64          `json:"amount"`
 	HasItems           bool            `json:"has_items"`
 	IsScheduled        bool            `json:"is_scheduled"`
 	IsDraft            bool            `json:"is_draft"`
 	Attachments        json.RawMessage `gorm:"type:json" json:"-"`
 	TypeID             uint            `json:"type_id"`
-	PaymentAccountID   *uint           `json:"payment_account_id"`
+	PaymentAccountID   uint            `json:"payment_account_id"`
 	PaymentAccountToID *uint           `json:"payment_account_to_id"`
+	CreatedAt          time.Time       `json:"created_at"`
 	UpdatedAt          time.Time       `json:"updated_at"`
 
 	PaymentType      *PaymentType    `gorm:"foreignKey:TypeID" json:"-"`
@@ -69,8 +70,14 @@ func (p *Payment) GetAttachmentsCount() int {
 }
 
 func (p *Payment) AfterFind(tx *gorm.DB) (err error) {
+	amount := int64(0)
+
+	if p.Amount != nil {
+		amount = *p.Amount
+	}
+
 	p.FormattedUpdatedAt = utils.FormatDateID(p.UpdatedAt, "Monday, 2 Jan 2006, 15.04 WIB")
-	p.FormattedAmount = utils.FormatRupiah(p.Amount)
+	p.FormattedAmount = utils.FormatRupiah(amount)
 	p.FormattedDate = utils.FormatDateID(time.Time(p.Date), "Monday, 2 Jan 2006")
 	p.AttachmentsCount = p.GetAttachmentsCount()
 

@@ -105,3 +105,9 @@ func (r *PaymentRepository) FindByID(id int) (*models.Payment, error) {
 
 	return &payment, err
 }
+
+func (r *PaymentRepository) Create(payment *models.Payment) (*models.Payment, error) {
+	err := r.db.Create(payment).Error
+	return payment, err
+}
+

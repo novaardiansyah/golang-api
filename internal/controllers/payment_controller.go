@@ -14,6 +14,7 @@ package controllers
 
 import (
 	"golang-api/internal/config"
+	"golang-api/internal/dto"
 	"golang-api/internal/models"
 	"golang-api/internal/repositories"
 	"golang-api/pkg/utils"
@@ -335,4 +336,86 @@ func (ctrl *PaymentController) GetAttachments(c *fiber.Ctx) error {
 	}
 
 	return utils.SuccessResponse(c, message, responseData)
+}
+
+// @Summary Create payment
+// @Description Create a new payment
+// @Tags payments
+// @Accept json
+// @Produce json
+// @Param body body dto.StorePaymentRequest true "Payment data"
+// @Success 200 {object} utils.Response{data=PaymentSwagger}
+// @Failure 401 {object} utils.UnauthorizedResponse
+// @Failure 400 {object} utils.SimpleErrorResponse
+// @Failure 422 {object} utils.ValidationErrorResponse
+// @Failure 500 {object} utils.SimpleErrorResponse
+// @Router /payments [post]
+// @Security BearerAuth
+func (ctrl *PaymentController) Store(c *fiber.Ctx) error {
+	userId := c.Locals("user_id")
+	var payload dto.StorePaymentRequest
+
+	rules := govalidator.MapData{
+		"amount":                []string{"numeric"},
+		"date":                  []string{"required", "date:yyyy-mm-dd"},
+		"name":                  []string{"max:255"},
+		"type_id":               []string{"required", "numeric"},
+		"payment_account_id":    []string{"required", "numeric"},
+		"payment_account_to_id": []string{"numeric"},
+		"has_items":             []string{"bool"},
+		"is_scheduled":          []string{"bool"},
+		"is_draft":              []string{"bool"},
+		"request_view":          []string{"bool"},
+	}
+
+	errs := utils.ValidateJSON(c, &payload, rules)
+	if errs != nil {
+		return utils.ValidationError(c, errs)
+	}
+
+	errors := make(map[string][]string)
+
+	if payload.HasItems == false {
+		if payload.Amount == nil || *payload.Amount < 1 {
+			errors["amount"] = []string{"This field is required when the payment has no items", "This field must be greater than 0"}
+		}
+
+		if payload.Name == nil || *payload.Name == "" {
+			errors["name"] = []string{"This field is required when the payment has no items"}
+		}
+	}
+
+	if payload.TypeID == 3 || payload.TypeID == 4 {
+		if payload.PaymentAccountToID == nil {
+			errors["payment_account_to_id"] = []string{"This field is required when the category is transfer or widrawal."}
+		}
+	}
+
+	if len(errors) > 0 {
+		return utils.ValidationError(c, errors)
+	}
+
+	if payload.HasItems {
+		payload.Amount = nil
+		payload.Name = nil
+		payload.TypeID = 1
+	}
+
+	result, err := ctrl.repo.Create(&models.Payment{
+		UserID:             userId.(uint),
+		Name:               payload.Name,
+		Amount:             payload.Amount,
+		TypeID:             payload.TypeID,
+		PaymentAccountID:   payload.PaymentAccountID,
+		PaymentAccountToID: payload.PaymentAccountToID,
+		HasItems:           payload.HasItems,
+		IsScheduled:        payload.IsScheduled,
+		IsDraft:            payload.IsDraft,
+	})
+
+	if err != nil {
+		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to create payment")
+	}
+
+	return utils.SuccessResponse(c, "Payment created successfully", result)
 }

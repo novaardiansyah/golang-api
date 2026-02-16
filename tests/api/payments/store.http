@@ -1,0 +1,16 @@
+POST {{ baseUrl }}/api/payments HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{ token }}
+
+{
+  "name": "Test Golang",
+  "amount": 1000,
+  "type_id": 1,
+  "date": "2026-02-17",
+  "payment_account_id": 1,
+  "payment_account_to_id": null,
+  "has_items": false,
+  "is_draft": false,
+  "is_scheduled": false
+}
