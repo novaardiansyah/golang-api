@@ -7,7 +7,7 @@
  * Website: https://novaardiansyah.id
  * MIT License: https://github.com/novaardiansyah/golang-api/blob/main/LICENSE
  * 
- * Copyright (c) 2025-2026 Nova Ardiansyah, Org
+ * Copyright (c) 2026 Nova Ardiansyah, Org
  */
 
 package repositories
@@ -40,4 +40,18 @@ func (r *PaymentAccountRepository) FindAllPaginated(userID uint, page, limit int
   err := r.db.Where("user_id = ?", userID).Offset(offset).Limit(limit).Find(&paymentAccounts).Error
 
   return paymentAccounts, err
+}
+
+func (r *PaymentAccountRepository) Update(tx *gorm.DB, id uint, paymentAccount *models.PaymentAccount) (*models.PaymentAccount, error) {
+	if err := tx.Where("id = ?", id).Updates(paymentAccount).Error; err != nil {
+		return nil, err
+	}
+
+	return paymentAccount, nil
+}
+
+func (r *PaymentAccountRepository) FindByID(id uint) (*models.PaymentAccount, error) {
+	var paymentAccount models.PaymentAccount
+	err := r.db.First(&paymentAccount, id).Error
+	return &paymentAccount, err
 }

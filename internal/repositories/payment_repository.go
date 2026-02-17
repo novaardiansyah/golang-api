@@ -110,6 +110,14 @@ func (r *PaymentRepository) Create(tx *gorm.DB, payment *models.Payment) (*model
 	if err := tx.Create(payment).Error; err != nil {
 		return nil, err
 	}
+
+	if err := tx.
+		Preload("PaymentType").
+		Preload("PaymentAccount").
+		Preload("PaymentAccountTo").
+		First(payment, payment.ID).Error; err != nil {
+		return nil, err
+	}
+
 	return payment, nil
 }
-

@@ -8,3 +8,10 @@ type PaymentType struct {
 func (PaymentType) TableName() string {
 	return "payment_types"
 }
+
+const (
+	PaymentTypeExpense    uint = 1
+	PaymentTypeIncome     uint = 2
+	PaymentTypeTransfer   uint = 3
+	PaymentTypeWithdrawal uint = 4
+)

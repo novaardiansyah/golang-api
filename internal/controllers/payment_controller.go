@@ -25,29 +25,31 @@ import (
 	"time"
 
 	"encoding/json"
+	"errors"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/thedevsaddam/govalidator"
 	"gorm.io/gorm"
 )
 
-const (
-	PaymentTypeExpense    = 1
-	PaymentTypeIncome     = 2
-	PaymentTypeTransfer   = 3
-	PaymentTypeWithdrawal = 4
-)
-
 type PaymentController struct {
-	repo     *repositories.PaymentRepository
-	generate *repositories.GenerateRepository
-	db       *gorm.DB
+	repo           *repositories.PaymentRepository
+	generate       *repositories.GenerateRepository
+	paymentAccount *repositories.PaymentAccountRepository
+	db             *gorm.DB
 }
 
 func NewPaymentController(db *gorm.DB) *PaymentController {
 	repo := repositories.NewPaymentRepository(db)
 	generate := repositories.NewGenerateRepository(db)
-	return &PaymentController{repo: repo, generate: generate, db: db}
+	paymentAccount := repositories.NewPaymentAccountRepository(db)
+
+	return &PaymentController{
+		repo:           repo,
+		generate:       generate,
+		paymentAccount: paymentAccount,
+		db:             db,
+	}
 }
 
 type SummaryResponse struct {
@@ -233,7 +235,7 @@ func (ctrl *PaymentController) Summary(c *fiber.Ctx) error {
 			SUM(CASE WHEN type_id = ? THEN amount ELSE 0 END) as total_withdrawal,
 			SUM(CASE WHEN type_id = ? THEN amount ELSE 0 END) as total_transfer,
 			SUM(CASE WHEN type_id = ? AND is_scheduled = 1 THEN amount ELSE 0 END) as scheduled_expense
-		`, PaymentTypeIncome, PaymentTypeExpense, PaymentTypeWithdrawal, PaymentTypeTransfer, PaymentTypeExpense).
+		`, models.PaymentTypeIncome, models.PaymentTypeExpense, models.PaymentTypeWithdrawal, models.PaymentTypeTransfer, models.PaymentTypeExpense).
 		Scan(&totals)
 
 	var totalBalance int64
@@ -378,26 +380,26 @@ func (ctrl *PaymentController) Store(c *fiber.Ctx) error {
 		return utils.ValidationError(c, errs)
 	}
 
-	errors := make(map[string][]string)
+	validationErrs := make(map[string][]string)
 
 	if payload.HasItems == false {
 		if payload.Amount == nil || *payload.Amount < 1 {
-			errors["amount"] = []string{"This field is required when the payment has no items", "This field must be greater than 0"}
+			validationErrs["amount"] = []string{"This field is required when the payment has no items", "This field must be greater than 0"}
 		}
 
 		if payload.Name == nil || *payload.Name == "" {
-			errors["name"] = []string{"This field is required when the payment has no items"}
+			validationErrs["name"] = []string{"This field is required when the payment has no items"}
 		}
 	}
 
 	if payload.TypeID == 3 || payload.TypeID == 4 {
 		if payload.PaymentAccountToID == nil {
-			errors["payment_account_to_id"] = []string{"This field is required when the category is transfer or widrawal."}
+			validationErrs["payment_account_to_id"] = []string{"This field is required when the category is transfer or widrawal."}
 		}
 	}
 
-	if len(errors) > 0 {
-		return utils.ValidationError(c, errors)
+	if len(validationErrs) > 0 {
+		return utils.ValidationError(c, validationErrs)
 	}
 
 	if payload.HasItems {
@@ -406,9 +408,19 @@ func (ctrl *PaymentController) Store(c *fiber.Ctx) error {
 		payload.TypeID = 1
 	}
 
-	code := ctrl.generate.GetCode("payment", false)
-
+	code := ctrl.generate.GetCode("payment", true)
 	var result *models.Payment
+
+	incomeOrExpense := false
+	transferOrWithdrawal := false
+
+	switch payload.TypeID {
+	case models.PaymentTypeExpense, models.PaymentTypeIncome:
+		incomeOrExpense = true
+	case models.PaymentTypeTransfer, models.PaymentTypeWithdrawal:
+		transferOrWithdrawal = true
+	}
+
 	err := ctrl.db.Transaction(func(tx *gorm.DB) error {
 		var err error
 
@@ -426,14 +438,71 @@ func (ctrl *PaymentController) Store(c *fiber.Ctx) error {
 		})
 
 		if err != nil {
-			return err
+			return errors.New("Failed to create payment, please try again")
+		}
+
+		paymentAccount, err := ctrl.paymentAccount.FindByID(payload.PaymentAccountID)
+		if err != nil {
+			return errors.New("Payment account not found")
+		}
+
+		depositChange := paymentAccount.Deposit
+
+		if incomeOrExpense {
+			if payload.TypeID == models.PaymentTypeExpense {
+				if *payload.Amount > depositChange {
+					return errors.New("Insufficient balance for this payment account (e01)")
+				}
+				depositChange -= *payload.Amount
+			} else {
+				depositChange += *payload.Amount
+			}
+
+			_, err = ctrl.paymentAccount.Update(tx, payload.PaymentAccountID, &models.PaymentAccount{
+				Deposit: depositChange,
+			})
+
+			if err != nil {
+				return errors.New("Failed to update payment account, please try again")
+			}
+		} else if transferOrWithdrawal {
+			paymentAccountTo, err := ctrl.paymentAccount.FindByID(*payload.PaymentAccountToID)
+			if err != nil {
+				return errors.New("Payment account destination not found")
+			}
+
+			balanceOrigin := paymentAccount.Deposit
+			balanceTo := paymentAccountTo.Deposit
+
+			if balanceOrigin < *payload.Amount {
+				return errors.New("Insufficient balance for this payment account (e02)")
+			}
+
+			balanceOrigin -= *payload.Amount
+			balanceTo += *payload.Amount
+
+			_, err = ctrl.paymentAccount.Update(tx, payload.PaymentAccountID, &models.PaymentAccount{
+				Deposit: balanceOrigin,
+			})
+
+			if err != nil {
+				return errors.New("Failed to update payment account, please try again")
+			}
+
+			_, err = ctrl.paymentAccount.Update(tx, *payload.PaymentAccountToID, &models.PaymentAccount{
+				Deposit: balanceTo,
+			})
+
+			if err != nil {
+				return errors.New("Failed to update payment account destination, please try again")
+			}
 		}
 
 		return nil
 	})
 
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to create payment")
+		return utils.ErrorResponse(c, fiber.StatusBadRequest, err.Error())
 	}
 
 	return utils.SuccessResponse(c, "Payment created successfully", result)
