@@ -3,15 +3,13 @@ package routes
 import (
 	"golang-api/internal/controllers"
 	"golang-api/internal/middleware"
-	"golang-api/internal/repositories"
 
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
 
 func PaymentRoutes(api fiber.Router, db *gorm.DB) {
-	paymentRepo := repositories.NewPaymentRepository(db)
-	paymentController := controllers.NewPaymentController(paymentRepo)
+	paymentController := controllers.NewPaymentController(db)
 
 	payments := api.Group("/payments", middleware.Auth(db))
 

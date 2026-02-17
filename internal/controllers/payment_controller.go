@@ -28,6 +28,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/thedevsaddam/govalidator"
+	"gorm.io/gorm"
 )
 
 const (
@@ -38,7 +39,15 @@ const (
 )
 
 type PaymentController struct {
-	repo *repositories.PaymentRepository
+	repo     *repositories.PaymentRepository
+	generate *repositories.GenerateRepository
+	db       *gorm.DB
+}
+
+func NewPaymentController(db *gorm.DB) *PaymentController {
+	repo := repositories.NewPaymentRepository(db)
+	generate := repositories.NewGenerateRepository(db)
+	return &PaymentController{repo: repo, generate: generate, db: db}
 }
 
 type SummaryResponse struct {
@@ -79,10 +88,6 @@ type AttachmentResponse struct {
 type OriginalAttachment struct {
 	URL           string `json:"url"`
 	FormattedSize string `json:"formatted_size"`
-}
-
-func NewPaymentController(repo *repositories.PaymentRepository) *PaymentController {
-	return &PaymentController{repo: repo}
 }
 
 // Index godoc
@@ -401,16 +406,30 @@ func (ctrl *PaymentController) Store(c *fiber.Ctx) error {
 		payload.TypeID = 1
 	}
 
-	result, err := ctrl.repo.Create(&models.Payment{
-		UserID:             userId.(uint),
-		Name:               payload.Name,
-		Amount:             payload.Amount,
-		TypeID:             payload.TypeID,
-		PaymentAccountID:   payload.PaymentAccountID,
-		PaymentAccountToID: payload.PaymentAccountToID,
-		HasItems:           payload.HasItems,
-		IsScheduled:        payload.IsScheduled,
-		IsDraft:            payload.IsDraft,
+	code := ctrl.generate.GetCode("payment", false)
+
+	var result *models.Payment
+	err := ctrl.db.Transaction(func(tx *gorm.DB) error {
+		var err error
+
+		result, err = ctrl.repo.Create(tx, &models.Payment{
+			UserID:             userId.(uint),
+			Code:               code,
+			Name:               payload.Name,
+			Amount:             payload.Amount,
+			TypeID:             payload.TypeID,
+			PaymentAccountID:   payload.PaymentAccountID,
+			PaymentAccountToID: payload.PaymentAccountToID,
+			HasItems:           payload.HasItems,
+			IsScheduled:        payload.IsScheduled,
+			IsDraft:            payload.IsDraft,
+		})
+
+		if err != nil {
+			return err
+		}
+
+		return nil
 	})
 
 	if err != nil {

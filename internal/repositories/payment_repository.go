@@ -106,8 +106,10 @@ func (r *PaymentRepository) FindByID(id int) (*models.Payment, error) {
 	return &payment, err
 }
 
-func (r *PaymentRepository) Create(payment *models.Payment) (*models.Payment, error) {
-	err := r.db.Create(payment).Error
-	return payment, err
+func (r *PaymentRepository) Create(tx *gorm.DB, payment *models.Payment) (*models.Payment, error) {
+	if err := tx.Create(payment).Error; err != nil {
+		return nil, err
+	}
+	return payment, nil
 }
 
