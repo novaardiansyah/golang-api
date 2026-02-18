@@ -35,7 +35,7 @@ type PaymentController struct {
 	repo               *repositories.PaymentRepository
 	generate           *repositories.GenerateRepository
 	paymentAccount     *repositories.PaymentAccountRepository
-	paymentStoreService payment_service.StoreService
+	paymentService     payment_service.MainService
 	db                 *gorm.DB
 }
 
@@ -43,13 +43,13 @@ func NewPaymentController(db *gorm.DB) *PaymentController {
 	repo := repositories.NewPaymentRepository(db)
 	generate := repositories.NewGenerateRepository(db)
 	paymentAccount := repositories.NewPaymentAccountRepository(db)
-	paymentStoreService := payment_service.NewStoreService(db)
+	paymentService := payment_service.NewMainService(db)
 
 	return &PaymentController{
 		repo:               repo,
 		generate:           generate,
 		paymentAccount:     paymentAccount,
-		paymentStoreService: paymentStoreService,
+		paymentService:     paymentService,
 		db:                 db,
 	}
 }
@@ -361,5 +361,5 @@ func (ctrl *PaymentController) GetAttachments(c *fiber.Ctx) error {
 // @Router /payments [post]
 // @Security BearerAuth
 func (ctrl *PaymentController) Store(c *fiber.Ctx) error {
-	return ctrl.paymentStoreService.Store(c)
+	return ctrl.paymentService.Store(c)
 }
