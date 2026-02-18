@@ -87,16 +87,16 @@ func (ctrl *AuthController) Login(c *fiber.Ctx) error {
 	activityLog := models.ActivityLog{
 		LogName:        "Resource",
 		Description:    fmt.Sprintf("User %s has successfully authenticated via the API service", user.Name),
-		SubjectID:      user.ID,
-		SubjectType:    "App\\Models\\User",
+		SubjectID:      &user.ID,
+		SubjectType:    utils.String("App\\Models\\User"),
 		Event:          "Login",
 		CauserID:       user.ID,
 		CauserType:     "App\\Models\\User",
-		PrevProperties: json.RawMessage("[]"),
+		PrevProperties: utils.RawMessage(json.RawMessage("[]")),
 		Properties:     properties,
-		IPAddress:      c.IP(),
-		UserAgent:      string(c.Request().Header.UserAgent()),
-		Referer:        c.Get("Referer"),
+		IPAddress:      utils.String(c.IP()),
+		UserAgent:      utils.String(string(c.Request().Header.UserAgent())),
+		Referer:        utils.String(c.Get("Referer")),
 	}
 
 	ctrl.ActivityLogRepo.Store(&activityLog)

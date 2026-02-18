@@ -231,14 +231,30 @@ func (s *storeService) validate(c *fiber.Ctx, payload *dto.StorePaymentRequest) 
 }
 
 func (s *storeService) saveLog(userId uint, result *models.Payment) {
-	properties, _ := json.Marshal(result)
+	logProps := dto.PaymentLogProperties{
+		ID:                 result.ID,
+		UserID:             result.UserID,
+		Code:               result.Code,
+		Name:               result.Name,
+		Date:               result.Date,
+		Amount:             result.Amount,
+		HasItems:           result.HasItems,
+		IsScheduled:        result.IsScheduled,
+		IsDraft:            result.IsDraft,
+		Attachments:        result.Attachments,
+		TypeID:             result.TypeID,
+		PaymentAccountID:   result.PaymentAccountID,
+		PaymentAccountToID: result.PaymentAccountToID,
+	}
+
+	properties, _ := json.Marshal(logProps)
 
 	err := s.activityLog.Store(&models.ActivityLog{
 		Event:       "Created",
 		LogName:     "Resource",
 		Description: "Payment Created by Nova Ardiansyah (Hardcode)",
-		SubjectType: "App\\Models\\Payment",
-		SubjectID:   result.ID,
+		SubjectType: utils.String("App\\Models\\Payment"),
+		SubjectID:   &result.ID,
 		CauserType:  "App\\Models\\User",
 		CauserID:    userId,
 		Properties:  properties,
