@@ -121,7 +121,7 @@ func (s *storeService) updateBalances(tx *gorm.DB, userId uint, payload *dto.Sto
 }
 
 func (s *storeService) handleIncomeOrExpense(tx *gorm.DB, userId uint, payload *dto.StorePaymentRequest) error {
-	paymentAccount, err := s.paymentAccount.SelectByID(payload.PaymentAccountID, []string{"id", "user_id", "name", "deposit"})
+	paymentAccount, err := s.paymentAccount.SelectByID(tx, payload.PaymentAccountID, []string{"id", "user_id", "name", "deposit"})
 
 	if err != nil {
 		return errors.New("Payment account not found")
@@ -151,12 +151,12 @@ func (s *storeService) handleIncomeOrExpense(tx *gorm.DB, userId uint, payload *
 }
 
 func (s *storeService) handleTransferOrWithdrawal(tx *gorm.DB, userId uint, payload *dto.StorePaymentRequest) error {
-	paymentAccount, err := s.paymentAccount.FindByID(payload.PaymentAccountID)
+	paymentAccount, err := s.paymentAccount.SelectByID(tx, payload.PaymentAccountID, []string{"id", "user_id", "name", "deposit"})
 	if err != nil {
 		return errors.New("Payment account not found")
 	}
 
-	paymentAccountTo, err := s.paymentAccount.FindByID(*payload.PaymentAccountToID)
+	paymentAccountTo, err := s.paymentAccount.SelectByID(tx, *payload.PaymentAccountToID, []string{"id", "user_id", "name", "deposit"})
 	if err != nil {
 		return errors.New("Payment account destination not found")
 	}

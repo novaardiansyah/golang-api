@@ -17,6 +17,7 @@ import (
 	"golang-api/internal/dto"
 	"golang-api/internal/models"
 	"golang-api/pkg/utils"
+	"log"
 
 	"gorm.io/gorm"
 )
@@ -50,35 +51,49 @@ func (r *PaymentAccountRepository) FindAllPaginated(userID uint, page, limit int
 }
 
 func (r *PaymentAccountRepository) Update(tx *gorm.DB, userId uint, paymentAccount *models.PaymentAccount, prevPaymentAccount *models.PaymentAccount) (*models.PaymentAccount, error) {
-	var err error
-	before := prevPaymentAccount
-
-	if prevPaymentAccount == nil {
-		before, err = r.SelectByID(paymentAccount.ID, []string{"id", "user_id", "name", "deposit"})
-		if err != nil {
-			return nil, err
-		}
-	}
+	before, _ := r.beforeUpdate(tx, paymentAccount, prevPaymentAccount)
 
 	if err := tx.Where("id = ?", paymentAccount.ID).Updates(paymentAccount).Error; err != nil {
 		return nil, err
 	}
 
-	prevDifference := before.Deposit - paymentAccount.Deposit
-	decreaseDeposit := paymentAccount.Deposit < before.Deposit
+	r.afterUpdate(tx, userId, before)
 
-	if decreaseDeposit {
-		prevDifference = -prevDifference
+	return paymentAccount, nil
+}
+
+func (r *PaymentAccountRepository) beforeUpdate(tx *gorm.DB, paymentAccount *models.PaymentAccount, prevPaymentAccount *models.PaymentAccount) (*models.PaymentAccount, error) {
+	var err error
+	before := prevPaymentAccount
+
+	if prevPaymentAccount == nil {
+		before, err = r.SelectByID(tx, paymentAccount.ID, []string{"id", "user_id", "name", "deposit"})
+
+		if err != nil {
+			log.Println("Payment Account beforeUpdate error: ", err)
+			return nil, err
+		}
 	}
 
-	difference := -prevDifference
+	return before, nil
+}
+
+func (r *PaymentAccountRepository) afterUpdate(tx *gorm.DB, userId uint, prevPaymentAccount *models.PaymentAccount) error {
+	paymentAccount, err := r.SelectByID(tx, prevPaymentAccount.ID, []string{"id", "user_id", "name", "deposit"})
+
+	if err != nil {
+		log.Println("Payment Account afterUpdate error: ", err)
+		return err
+	}
+
+	difference := prevPaymentAccount.Deposit - paymentAccount.Deposit
 
 	logPrevProps := dto.PaymentAccountLogProperties{
-		ID:         before.ID,
-		UserID:     before.UserID,
-		Name:       before.Name,
-		Deposit:    before.Deposit,
-		Difference: &prevDifference,
+		ID:         prevPaymentAccount.ID,
+		UserID:     prevPaymentAccount.UserID,
+		Name:       prevPaymentAccount.Name,
+		Deposit:    prevPaymentAccount.Deposit,
+		Difference: &difference,
 	}
 
 	logProps := dto.PaymentAccountLogProperties{
@@ -105,10 +120,10 @@ func (r *PaymentAccountRepository) Update(tx *gorm.DB, userId uint, paymentAccou
 	})
 
 	if err != nil {
-		return nil, err
+		log.Println("Payment Account afterUpdate error: ", err)
 	}
 
-	return paymentAccount, nil
+	return err
 }
 
 func (r *PaymentAccountRepository) FindByID(id uint) (*models.PaymentAccount, error) {
@@ -117,9 +132,13 @@ func (r *PaymentAccountRepository) FindByID(id uint) (*models.PaymentAccount, er
 	return &paymentAccount, err
 }
 
-// ! saya ingin select bukan * tapi field sesuai dto aja
-func (r *PaymentAccountRepository) SelectByID(id uint, fields []string) (*models.PaymentAccount, error) {
+func (r *PaymentAccountRepository) SelectByID(tx *gorm.DB, id uint, fields []string) (*models.PaymentAccount, error) {
 	var paymentAccount models.PaymentAccount
-	err := r.db.Select(fields).First(&paymentAccount, id).Error
+
+	if tx == nil {
+		tx = r.db
+	}
+
+	err := tx.Select(fields).First(&paymentAccount, id).Error
 	return &paymentAccount, err
 }
