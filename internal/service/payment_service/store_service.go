@@ -52,7 +52,16 @@ func (s *storeService) Store(c *fiber.Ctx) error {
 			return err
 		}
 
-		return s.updateBalances(tx, &payload)
+    draft := false
+    if payload.IsDraft || payload.IsScheduled {
+      draft = true
+    }
+
+    if draft == false {
+      return s.updateBalances(tx, &payload)
+    }
+
+		return nil
 	})
 
 	if err != nil {

@@ -8,9 +8,9 @@ Authorization: Bearer {{ token }}
   "amount": 1000,
   "type_id": 1,
   "date": "2026-02-17",
-  "payment_account_id": 1,
+  "payment_account_id": 4,
   "payment_account_to_id": null,
   "has_items": false,
-  "is_draft": false,
+  "is_draft": true,
   "is_scheduled": false
 }
