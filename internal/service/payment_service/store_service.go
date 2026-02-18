@@ -43,13 +43,11 @@ func (s *storeService) Store(c *fiber.Ctx) error {
 	}
 
 	s.preparePayload(&payload)
-
-	code := s.generate.GetCode("payment", true)
 	var result *models.Payment
 
 	err := s.db.Transaction(func(tx *gorm.DB) error {
 		var err error
-		result, err = s.createPayment(tx, userId, code, &payload)
+		result, err = s.createPayment(tx, userId, &payload)
 		if err != nil {
 			return err
 		}
@@ -72,7 +70,8 @@ func (s *storeService) preparePayload(payload *dto.StorePaymentRequest) {
 	}
 }
 
-func (s *storeService) createPayment(tx *gorm.DB, userId uint, code string, payload *dto.StorePaymentRequest) (*models.Payment, error) {
+func (s *storeService) createPayment(tx *gorm.DB, userId uint, payload *dto.StorePaymentRequest) (*models.Payment, error) {
+	code := s.generate.GetCode("payment", true)
 	date, _ := time.Parse("2006-01-02", payload.Date)
 
 	payment, err := s.payment.Create(tx, &models.Payment{
