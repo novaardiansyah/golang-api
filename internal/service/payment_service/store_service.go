@@ -1,11 +1,13 @@
 package payment_service
 
 import (
+	"encoding/json"
 	"errors"
 	"golang-api/internal/dto"
 	"golang-api/internal/models"
 	"golang-api/internal/repositories"
 	"golang-api/pkg/utils"
+	"log"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -21,6 +23,7 @@ type storeService struct {
 	payment        *repositories.PaymentRepository
 	paymentAccount *repositories.PaymentAccountRepository
 	generate       *repositories.GenerateRepository
+	activityLog    *repositories.ActivityLogRepository
 	db             *gorm.DB
 }
 
@@ -29,6 +32,7 @@ func NewStoreService(db *gorm.DB) StoreService {
 		payment:        repositories.NewPaymentRepository(db),
 		paymentAccount: repositories.NewPaymentAccountRepository(db),
 		generate:       repositories.NewGenerateRepository(db),
+		activityLog:    repositories.NewActivityLogRepository(db),
 		db:             db,
 	}
 }
@@ -52,14 +56,14 @@ func (s *storeService) Store(c *fiber.Ctx) error {
 			return err
 		}
 
-    draft := false
-    if payload.IsDraft || payload.IsScheduled {
-      draft = true
-    }
+		draft := false
+		if payload.IsDraft || payload.IsScheduled {
+			draft = true
+		}
 
-    if draft == false {
-      return s.updateBalances(tx, &payload)
-    }
+		if draft == false {
+			return s.updateBalances(tx, &payload)
+		}
 
 		return nil
 	})
@@ -67,6 +71,8 @@ func (s *storeService) Store(c *fiber.Ctx) error {
 	if err != nil {
 		return utils.ErrorResponse(c, fiber.StatusBadRequest, err.Error())
 	}
+
+	s.saveLog(userId, result)
 
 	return utils.SuccessResponse(c, "Payment created successfully", result)
 }
@@ -222,4 +228,23 @@ func (s *storeService) validate(c *fiber.Ctx, payload *dto.StorePaymentRequest) 
 	}
 
 	return nil
+}
+
+func (s *storeService) saveLog(userId uint, result *models.Payment) {
+	properties, _ := json.Marshal(result)
+
+	err := s.activityLog.Store(&models.ActivityLog{
+		Event:       "Created",
+		LogName:     "Resource",
+		Description: "Payment Created by Nova Ardiansyah (Hardcode)",
+		SubjectType: "App\\Models\\Payment",
+		SubjectID:   result.ID,
+		CauserType:  "App\\Models\\User",
+		CauserID:    userId,
+		Properties:  properties,
+	})
+
+	if err != nil {
+		log.Println("Transaction successfully saved, but failed to save activity log", err)
+	}
 }
