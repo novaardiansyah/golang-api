@@ -62,7 +62,7 @@ func (s *storeService) Store(c *fiber.Ctx) error {
 		}
 
 		if draft == false {
-			return s.updateBalances(tx, &payload)
+			return s.updateBalances(tx, userId, &payload)
 		}
 
 		return nil
@@ -110,18 +110,19 @@ func (s *storeService) createPayment(tx *gorm.DB, userId uint, payload *dto.Stor
 	return payment, nil
 }
 
-func (s *storeService) updateBalances(tx *gorm.DB, payload *dto.StorePaymentRequest) error {
+func (s *storeService) updateBalances(tx *gorm.DB, userId uint, payload *dto.StorePaymentRequest) error {
 	switch payload.TypeID {
 	case models.PaymentTypeExpense, models.PaymentTypeIncome:
-		return s.handleIncomeOrExpense(tx, payload)
+		return s.handleIncomeOrExpense(tx, userId, payload)
 	case models.PaymentTypeTransfer, models.PaymentTypeWithdrawal:
-		return s.handleTransferOrWithdrawal(tx, payload)
+		return s.handleTransferOrWithdrawal(tx, userId, payload)
 	}
 	return nil
 }
 
-func (s *storeService) handleIncomeOrExpense(tx *gorm.DB, payload *dto.StorePaymentRequest) error {
-	paymentAccount, err := s.paymentAccount.FindByID(payload.PaymentAccountID)
+func (s *storeService) handleIncomeOrExpense(tx *gorm.DB, userId uint, payload *dto.StorePaymentRequest) error {
+	paymentAccount, err := s.paymentAccount.SelectByID(payload.PaymentAccountID, []string{"id", "user_id", "name", "deposit"})
+
 	if err != nil {
 		return errors.New("Payment account not found")
 	}
@@ -137,9 +138,10 @@ func (s *storeService) handleIncomeOrExpense(tx *gorm.DB, payload *dto.StorePaym
 		depositChange += *payload.Amount
 	}
 
-	_, err = s.paymentAccount.Update(tx, payload.PaymentAccountID, &models.PaymentAccount{
+	_, err = s.paymentAccount.Update(tx, userId, &models.PaymentAccount{
+		ID:      payload.PaymentAccountID,
 		Deposit: depositChange,
-	})
+	}, paymentAccount)
 
 	if err != nil {
 		return errors.New("Failed to update payment account, please try again")
@@ -148,7 +150,7 @@ func (s *storeService) handleIncomeOrExpense(tx *gorm.DB, payload *dto.StorePaym
 	return nil
 }
 
-func (s *storeService) handleTransferOrWithdrawal(tx *gorm.DB, payload *dto.StorePaymentRequest) error {
+func (s *storeService) handleTransferOrWithdrawal(tx *gorm.DB, userId uint, payload *dto.StorePaymentRequest) error {
 	paymentAccount, err := s.paymentAccount.FindByID(payload.PaymentAccountID)
 	if err != nil {
 		return errors.New("Payment account not found")
@@ -169,16 +171,20 @@ func (s *storeService) handleTransferOrWithdrawal(tx *gorm.DB, payload *dto.Stor
 	balanceOrigin -= *payload.Amount
 	balanceTo += *payload.Amount
 
-	_, err = s.paymentAccount.Update(tx, payload.PaymentAccountID, &models.PaymentAccount{
+	_, err = s.paymentAccount.Update(tx, userId, &models.PaymentAccount{
+		ID:      payload.PaymentAccountID,
 		Deposit: balanceOrigin,
-	})
+	}, paymentAccount)
+
 	if err != nil {
 		return errors.New("Failed to update payment account, please try again")
 	}
 
-	_, err = s.paymentAccount.Update(tx, *payload.PaymentAccountToID, &models.PaymentAccount{
+	_, err = s.paymentAccount.Update(tx, userId, &models.PaymentAccount{
+		ID:      *payload.PaymentAccountToID,
 		Deposit: balanceTo,
-	})
+	}, paymentAccountTo)
+
 	if err != nil {
 		return errors.New("Failed to update payment account destination, please try again")
 	}

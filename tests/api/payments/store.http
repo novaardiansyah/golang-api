@@ -11,6 +11,6 @@ Authorization: Bearer {{ token }}
   "payment_account_id": 4,
   "payment_account_to_id": null,
   "has_items": false,
-  "is_draft": true,
+  "is_draft": false,
   "is_scheduled": false
 }
