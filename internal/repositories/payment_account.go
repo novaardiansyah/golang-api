@@ -50,6 +50,7 @@ func (r *PaymentAccountRepository) FindAllPaginated(userID uint, page, limit int
 	return paymentAccounts, err
 }
 
+// ! Update
 func (r *PaymentAccountRepository) Update(tx *gorm.DB, userId uint, paymentAccount *models.PaymentAccount, prevPaymentAccount *models.PaymentAccount) (*models.PaymentAccount, error) {
 	before, _ := r.beforeUpdate(tx, paymentAccount, prevPaymentAccount)
 
@@ -125,6 +126,8 @@ func (r *PaymentAccountRepository) afterUpdate(tx *gorm.DB, userId uint, prevPay
 
 	return err
 }
+
+// ! End Update
 
 func (r *PaymentAccountRepository) FindByID(id uint) (*models.PaymentAccount, error) {
 	var paymentAccount models.PaymentAccount

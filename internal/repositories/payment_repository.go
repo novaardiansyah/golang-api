@@ -1,7 +1,11 @@
 package repositories
 
 import (
+	"encoding/json"
+	"golang-api/internal/dto"
 	"golang-api/internal/models"
+	"golang-api/pkg/utils"
+	"log"
 
 	"gorm.io/gorm"
 )
@@ -16,11 +20,15 @@ type PaymentFilter struct {
 }
 
 type PaymentRepository struct {
-	db *gorm.DB
+	db                    *gorm.DB
+	activityLogRepository *ActivityLogRepository
 }
 
 func NewPaymentRepository(db *gorm.DB) *PaymentRepository {
-	return &PaymentRepository{db: db}
+	return &PaymentRepository{
+		db:                    db,
+		activityLogRepository: NewActivityLogRepository(db),
+	}
 }
 
 func (r *PaymentRepository) FindAllPaginated(page, limit int, filter PaymentFilter) ([]models.Payment, error) {
@@ -106,7 +114,8 @@ func (r *PaymentRepository) FindByID(id int) (*models.Payment, error) {
 	return &payment, err
 }
 
-func (r *PaymentRepository) Create(tx *gorm.DB, payment *models.Payment) (*models.Payment, error) {
+// ! Create
+func (r *PaymentRepository) Create(tx *gorm.DB, userId uint, payment *models.Payment) (*models.Payment, error) {
 	if err := tx.Create(payment).Error; err != nil {
 		return nil, err
 	}
@@ -119,5 +128,46 @@ func (r *PaymentRepository) Create(tx *gorm.DB, payment *models.Payment) (*model
 		return nil, err
 	}
 
+	r.afterCreate(userId, payment)
+
 	return payment, nil
 }
+
+func (r *PaymentRepository) afterCreate(userId uint, payment *models.Payment) (*models.Payment, error) {
+	logProps := dto.PaymentLogProperties{
+		ID:                 payment.ID,
+		UserID:             payment.UserID,
+		Code:               payment.Code,
+		Name:               payment.Name,
+		Date:               payment.Date,
+		Amount:             payment.Amount,
+		HasItems:           payment.HasItems,
+		IsScheduled:        payment.IsScheduled,
+		IsDraft:            payment.IsDraft,
+		Attachments:        payment.Attachments,
+		TypeID:             payment.TypeID,
+		PaymentAccountID:   payment.PaymentAccountID,
+		PaymentAccountToID: payment.PaymentAccountToID,
+	}
+
+	properties, _ := json.Marshal(logProps)
+
+	err := r.activityLogRepository.Store(&models.ActivityLog{
+		Event:       "Created",
+		LogName:     "Resource",
+		Description: "Payment Created by Nova Ardiansyah (Hardcode)",
+		SubjectType: utils.String("App\\Models\\Payment"),
+		SubjectID:   &payment.ID,
+		CauserType:  "App\\Models\\User",
+		CauserID:    userId,
+		Properties:  properties,
+	})
+
+	if err != nil {
+		log.Println("Transaction successfully saved, but failed to save activity log", err)
+	}
+
+	return payment, nil
+}
+
+// ! End Create

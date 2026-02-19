@@ -1,13 +1,11 @@
 package payment_service
 
 import (
-	"encoding/json"
 	"errors"
 	"golang-api/internal/dto"
 	"golang-api/internal/models"
 	"golang-api/internal/repositories"
 	"golang-api/pkg/utils"
-	"log"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -72,8 +70,6 @@ func (s *storeService) Store(c *fiber.Ctx) error {
 		return utils.ErrorResponse(c, fiber.StatusBadRequest, err.Error())
 	}
 
-	s.saveLog(userId, result)
-
 	return utils.SuccessResponse(c, "Payment created successfully", result)
 }
 
@@ -89,7 +85,7 @@ func (s *storeService) createPayment(tx *gorm.DB, userId uint, payload *dto.Stor
 	code := s.generate.GetCode("payment", true)
 	date, _ := time.Parse("2006-01-02", payload.Date)
 
-	payment, err := s.payment.Create(tx, &models.Payment{
+	payment, err := s.payment.Create(tx, userId, &models.Payment{
 		UserID:             userId,
 		Code:               code,
 		Name:               payload.Name,
@@ -234,39 +230,4 @@ func (s *storeService) validate(c *fiber.Ctx, payload *dto.StorePaymentRequest) 
 	}
 
 	return nil
-}
-
-func (s *storeService) saveLog(userId uint, result *models.Payment) {
-	logProps := dto.PaymentLogProperties{
-		ID:                 result.ID,
-		UserID:             result.UserID,
-		Code:               result.Code,
-		Name:               result.Name,
-		Date:               result.Date,
-		Amount:             result.Amount,
-		HasItems:           result.HasItems,
-		IsScheduled:        result.IsScheduled,
-		IsDraft:            result.IsDraft,
-		Attachments:        result.Attachments,
-		TypeID:             result.TypeID,
-		PaymentAccountID:   result.PaymentAccountID,
-		PaymentAccountToID: result.PaymentAccountToID,
-	}
-
-	properties, _ := json.Marshal(logProps)
-
-	err := s.activityLog.Store(&models.ActivityLog{
-		Event:       "Created",
-		LogName:     "Resource",
-		Description: "Payment Created by Nova Ardiansyah (Hardcode)",
-		SubjectType: utils.String("App\\Models\\Payment"),
-		SubjectID:   &result.ID,
-		CauserType:  "App\\Models\\User",
-		CauserID:    userId,
-		Properties:  properties,
-	})
-
-	if err != nil {
-		log.Println("Transaction successfully saved, but failed to save activity log", err)
-	}
 }
