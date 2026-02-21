@@ -209,6 +209,13 @@ definitions:
       user_id:
         type: integer
     type: object
+  controllers.PaymentTypeSwagger:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
   controllers.SummaryPercents:
     properties:
       expenses:
@@ -1020,6 +1027,53 @@ paths:
       summary: Get payment goals overview
       tags:
       - payment-goals
+  /payment-types:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of payment types
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: per_page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.PaginatedResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/controllers.PaymentTypeSwagger'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.SimpleErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.UnauthorizedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.SimpleErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List payment types
+      tags:
+      - payment_types
   /payments:
     get:
       consumes:

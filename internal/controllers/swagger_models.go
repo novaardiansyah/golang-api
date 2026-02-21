@@ -141,3 +141,8 @@ type UptimeMonitorLogSwagger struct {
 	ErrorMessage    string    `json:"error_message"`
 	CheckedAt       time.Time `json:"checked_at"`
 }
+
+type PaymentTypeSwagger struct {
+	ID   uint   `json:"id"`
+	Name string `json:"name"`
+}
