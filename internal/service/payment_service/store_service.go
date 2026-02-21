@@ -37,6 +37,7 @@ func NewStoreService(db *gorm.DB) StoreService {
 
 func (s *storeService) Store(c *fiber.Ctx) error {
 	userId := c.Locals("user_id").(uint)
+	userName := c.Locals("user_name").(string)
 	var payload dto.StorePaymentRequest
 
 	validateErrors := s.validate(c, &payload)
@@ -49,7 +50,7 @@ func (s *storeService) Store(c *fiber.Ctx) error {
 
 	err := s.db.Transaction(func(tx *gorm.DB) error {
 		var err error
-		result, err = s.createPayment(tx, userId, &payload)
+		result, err = s.createPayment(tx, userId, userName, &payload)
 		if err != nil {
 			return err
 		}
@@ -60,7 +61,7 @@ func (s *storeService) Store(c *fiber.Ctx) error {
 		}
 
 		if draft == false {
-			return s.updateBalances(tx, userId, &payload)
+			return s.updateBalances(tx, userId, userName, &payload)
 		}
 
 		return nil
@@ -81,11 +82,11 @@ func (s *storeService) preparePayload(payload *dto.StorePaymentRequest) {
 	}
 }
 
-func (s *storeService) createPayment(tx *gorm.DB, userId uint, payload *dto.StorePaymentRequest) (*models.Payment, error) {
+func (s *storeService) createPayment(tx *gorm.DB, userId uint, userName string, payload *dto.StorePaymentRequest) (*models.Payment, error) {
 	code := s.generate.GetCode("payment", true)
 	date, _ := time.Parse("2006-01-02", payload.Date)
 
-	payment, err := s.payment.Create(tx, userId, &models.Payment{
+	payment, err := s.payment.Create(tx, userId, userName, &models.Payment{
 		UserID:             userId,
 		Code:               code,
 		Name:               payload.Name,
@@ -106,17 +107,17 @@ func (s *storeService) createPayment(tx *gorm.DB, userId uint, payload *dto.Stor
 	return payment, nil
 }
 
-func (s *storeService) updateBalances(tx *gorm.DB, userId uint, payload *dto.StorePaymentRequest) error {
+func (s *storeService) updateBalances(tx *gorm.DB, userId uint, userName string, payload *dto.StorePaymentRequest) error {
 	switch payload.TypeID {
 	case models.PaymentTypeExpense, models.PaymentTypeIncome:
-		return s.handleIncomeOrExpense(tx, userId, payload)
+		return s.handleIncomeOrExpense(tx, userId, userName, payload)
 	case models.PaymentTypeTransfer, models.PaymentTypeWithdrawal:
-		return s.handleTransferOrWithdrawal(tx, userId, payload)
+		return s.handleTransferOrWithdrawal(tx, userId, userName, payload)
 	}
 	return nil
 }
 
-func (s *storeService) handleIncomeOrExpense(tx *gorm.DB, userId uint, payload *dto.StorePaymentRequest) error {
+func (s *storeService) handleIncomeOrExpense(tx *gorm.DB, userId uint, userName string, payload *dto.StorePaymentRequest) error {
 	paymentAccount, err := s.paymentAccount.SelectByID(tx, payload.PaymentAccountID, []string{"id", "user_id", "name", "deposit"})
 
 	if err != nil {
@@ -134,7 +135,7 @@ func (s *storeService) handleIncomeOrExpense(tx *gorm.DB, userId uint, payload *
 		depositChange += *payload.Amount
 	}
 
-	_, err = s.paymentAccount.Update(tx, userId, &models.PaymentAccount{
+	_, err = s.paymentAccount.Update(tx, userId, userName, &models.PaymentAccount{
 		ID:      payload.PaymentAccountID,
 		Deposit: depositChange,
 	}, paymentAccount)
@@ -146,7 +147,7 @@ func (s *storeService) handleIncomeOrExpense(tx *gorm.DB, userId uint, payload *
 	return nil
 }
 
-func (s *storeService) handleTransferOrWithdrawal(tx *gorm.DB, userId uint, payload *dto.StorePaymentRequest) error {
+func (s *storeService) handleTransferOrWithdrawal(tx *gorm.DB, userId uint, userName string, payload *dto.StorePaymentRequest) error {
 	paymentAccount, err := s.paymentAccount.SelectByID(tx, payload.PaymentAccountID, []string{"id", "user_id", "name", "deposit"})
 	if err != nil {
 		return errors.New("Payment account not found")
@@ -167,7 +168,7 @@ func (s *storeService) handleTransferOrWithdrawal(tx *gorm.DB, userId uint, payl
 	balanceOrigin -= *payload.Amount
 	balanceTo += *payload.Amount
 
-	_, err = s.paymentAccount.Update(tx, userId, &models.PaymentAccount{
+	_, err = s.paymentAccount.Update(tx, userId, userName, &models.PaymentAccount{
 		ID:      payload.PaymentAccountID,
 		Deposit: balanceOrigin,
 	}, paymentAccount)
@@ -176,7 +177,7 @@ func (s *storeService) handleTransferOrWithdrawal(tx *gorm.DB, userId uint, payl
 		return errors.New("Failed to update payment account, please try again")
 	}
 
-	_, err = s.paymentAccount.Update(tx, userId, &models.PaymentAccount{
+	_, err = s.paymentAccount.Update(tx, userId, userName, &models.PaymentAccount{
 		ID:      *payload.PaymentAccountToID,
 		Deposit: balanceTo,
 	}, paymentAccountTo)

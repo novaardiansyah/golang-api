@@ -115,7 +115,7 @@ func (r *PaymentRepository) FindByID(id int) (*models.Payment, error) {
 }
 
 // ! Create
-func (r *PaymentRepository) Create(tx *gorm.DB, userId uint, payment *models.Payment) (*models.Payment, error) {
+func (r *PaymentRepository) Create(tx *gorm.DB, userId uint, userName string, payment *models.Payment) (*models.Payment, error) {
 	if err := tx.Create(payment).Error; err != nil {
 		return nil, err
 	}
@@ -128,12 +128,12 @@ func (r *PaymentRepository) Create(tx *gorm.DB, userId uint, payment *models.Pay
 		return nil, err
 	}
 
-	r.afterCreate(userId, payment)
+	r.afterCreate(userId, userName, payment)
 
 	return payment, nil
 }
 
-func (r *PaymentRepository) afterCreate(userId uint, payment *models.Payment) (*models.Payment, error) {
+func (r *PaymentRepository) afterCreate(userId uint, userName string, payment *models.Payment) (*models.Payment, error) {
 	logProps := dto.PaymentLogProperties{
 		ID:                 payment.ID,
 		UserID:             payment.UserID,
@@ -155,7 +155,7 @@ func (r *PaymentRepository) afterCreate(userId uint, payment *models.Payment) (*
 	err := r.activityLogRepository.Store(&models.ActivityLog{
 		Event:       "Created",
 		LogName:     "Resource",
-		Description: "Payment Created by Nova Ardiansyah (Hardcode)",
+		Description: "Payment Created by " + userName,
 		SubjectType: utils.String("App\\Models\\Payment"),
 		SubjectID:   &payment.ID,
 		CauserType:  "App\\Models\\User",

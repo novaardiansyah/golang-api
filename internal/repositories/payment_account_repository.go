@@ -51,14 +51,14 @@ func (r *PaymentAccountRepository) FindAllPaginated(userID uint, page, limit int
 }
 
 // ! Update
-func (r *PaymentAccountRepository) Update(tx *gorm.DB, userId uint, paymentAccount *models.PaymentAccount, prevPaymentAccount *models.PaymentAccount) (*models.PaymentAccount, error) {
+func (r *PaymentAccountRepository) Update(tx *gorm.DB, userId uint, userName string, paymentAccount *models.PaymentAccount, prevPaymentAccount *models.PaymentAccount) (*models.PaymentAccount, error) {
 	before, _ := r.beforeUpdate(tx, paymentAccount, prevPaymentAccount)
 
 	if err := tx.Where("id = ?", paymentAccount.ID).Updates(paymentAccount).Error; err != nil {
 		return nil, err
 	}
 
-	r.afterUpdate(tx, userId, before)
+	r.afterUpdate(tx, userId, userName, before)
 
 	return paymentAccount, nil
 }
@@ -79,7 +79,7 @@ func (r *PaymentAccountRepository) beforeUpdate(tx *gorm.DB, paymentAccount *mod
 	return before, nil
 }
 
-func (r *PaymentAccountRepository) afterUpdate(tx *gorm.DB, userId uint, prevPaymentAccount *models.PaymentAccount) error {
+func (r *PaymentAccountRepository) afterUpdate(tx *gorm.DB, userId uint, userName string, prevPaymentAccount *models.PaymentAccount) error {
 	paymentAccount, err := r.SelectByID(tx, prevPaymentAccount.ID, []string{"id", "user_id", "name", "deposit"})
 
 	if err != nil {
@@ -111,7 +111,7 @@ func (r *PaymentAccountRepository) afterUpdate(tx *gorm.DB, userId uint, prevPay
 	err = r.activityLogRepository.Store(&models.ActivityLog{
 		Event:          "Updated",
 		LogName:        "Resource",
-		Description:    "Payment Account Updated by Nova Ardiansyah (Hardcode)",
+		Description:    "Payment Account Updated by " + userName,
 		SubjectType:    utils.String("App\\Models\\PaymentAccount"),
 		SubjectID:      &paymentAccount.ID,
 		CauserType:     "App\\Models\\User",

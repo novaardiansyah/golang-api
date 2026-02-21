@@ -3,6 +3,7 @@ package middleware
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"golang-api/internal/models"
 	"golang-api/internal/repositories"
 	"strconv"
 	"strings"
@@ -56,7 +57,7 @@ func Auth(db *gorm.DB) fiber.Handler {
 		hash := sha256.Sum256([]byte(plainTextToken))
 		hashedToken := hex.EncodeToString(hash[:])
 
-		token, err := PersonalAccessTokenRepo.FindByIDAndHashedToken(tokenID, hashedToken)
+		result, err := PersonalAccessTokenRepo.FindByIDAndHashedTokenWithUser(tokenID, hashedToken)
 
 		if err != nil {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
@@ -65,11 +66,24 @@ func Auth(db *gorm.DB) fiber.Handler {
 			})
 		}
 
-		if token.ExpiresAt != nil && token.ExpiresAt.Before(time.Now()) {
+		if result.ExpiresAt != nil && result.ExpiresAt.Before(time.Now()) {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"success": false,
 				"message": "Unauthorized: Token expired",
 			})
+		}
+
+		token := &models.PersonalAccessToken{
+			ID:            result.ID,
+			TokenableType: result.TokenableType,
+			TokenableID:   result.TokenableID,
+			Name:          result.Name,
+			Token:         result.Token,
+			Abilities:     result.Abilities,
+			LastUsedAt:    result.LastUsedAt,
+			ExpiresAt:     result.ExpiresAt,
+			CreatedAt:     result.CreatedAt,
+			UpdatedAt:     result.UpdatedAt,
 		}
 
 		fields := map[string]interface{}{"last_used_at": time.Now()}
@@ -79,6 +93,7 @@ func Auth(db *gorm.DB) fiber.Handler {
 
 		c.Locals("token", *token)
 		c.Locals("user_id", UserId)
+		c.Locals("user_name", result.UserName)
 
 		return c.Next()
 	}
