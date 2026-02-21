@@ -14,6 +14,7 @@ package controllers
 
 import (
 	"golang-api/internal/config"
+	"golang-api/internal/dto"
 	"golang-api/internal/models"
 	"golang-api/internal/repositories"
 	"golang-api/internal/service/payment_service"
@@ -32,25 +33,28 @@ import (
 )
 
 type PaymentController struct {
-	repo               *repositories.PaymentRepository
-	generate           *repositories.GenerateRepository
-	paymentAccount     *repositories.PaymentAccountRepository
-	paymentService     payment_service.MainService
-	db                 *gorm.DB
+	repo            *repositories.PaymentRepository
+	generate        *repositories.GenerateRepository
+	paymentAccount  *repositories.PaymentAccountRepository
+	paymentItemRepo *repositories.PaymentItemRepository
+	paymentService  payment_service.MainService
+	db              *gorm.DB
 }
 
 func NewPaymentController(db *gorm.DB) *PaymentController {
 	repo := repositories.NewPaymentRepository(db)
 	generate := repositories.NewGenerateRepository(db)
 	paymentAccount := repositories.NewPaymentAccountRepository(db)
+	paymentItemRepo := repositories.NewPaymentItemRepository(db)
 	paymentService := payment_service.NewMainService(db)
 
 	return &PaymentController{
-		repo:               repo,
-		generate:           generate,
-		paymentAccount:     paymentAccount,
-		paymentService:     paymentService,
-		db:                 db,
+		repo:            repo,
+		generate:        generate,
+		paymentAccount:  paymentAccount,
+		paymentItemRepo: paymentItemRepo,
+		paymentService:  paymentService,
+		db:              db,
 	}
 }
 
@@ -362,4 +366,127 @@ func (ctrl *PaymentController) GetAttachments(c *fiber.Ctx) error {
 // @Security BearerAuth
 func (ctrl *PaymentController) Store(c *fiber.Ctx) error {
 	return ctrl.paymentService.Store(c)
+}
+
+// GetItemsSummary godoc
+// @Summary Get payment items summary
+// @Description Get summary of items attached to a specific payment
+// @Tags payments
+// @Accept json
+// @Produce json
+// @Param id path int true "Payment ID"
+// @Success 200 {object} utils.Response{data=PaymentItemSummarySwagger}
+// @Failure 400 {object} utils.Response
+// @Failure 404 {object} utils.Response
+// @Router /payments/{id}/items/summary [get]
+// @Security BearerAuth
+func (ctrl *PaymentController) GetItemsSummary(c *fiber.Ctx) error {
+	paymentID, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Invalid payment ID")
+	}
+
+	payment, err := ctrl.repo.FindByID(paymentID)
+	if err != nil {
+		return utils.ErrorResponse(c, fiber.StatusNotFound, "Payment not found")
+	}
+
+	summary, err := ctrl.paymentItemRepo.GetSummaryByPaymentID(uint(paymentID))
+	if err != nil {
+		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to retrieve payment items summary")
+	}
+
+	if summary == nil {
+		summary = &repositories.PaymentItemSummary{
+			PaymentID:   uint(paymentID),
+			TotalItems:  0,
+			TotalQty:    0,
+			TotalAmount: 0,
+		}
+	}
+
+	response := dto.PaymentItemSummaryResponse{
+		PaymentID:       summary.PaymentID,
+		PaymentCode:     payment.Code,
+		TotalItems:      summary.TotalItems,
+		TotalQty:        summary.TotalQty,
+		TotalAmount:     summary.TotalAmount,
+		FormattedAmount: utils.FormatRupiah(summary.TotalAmount),
+	}
+
+	return utils.SuccessResponse(c, "Payment items summary retrieved successfully", response)
+}
+
+// GetItemsAttached godoc
+// @Summary Get attached items for a payment
+// @Description Get paginated list of items attached to a specific payment
+// @Tags payments
+// @Accept json
+// @Produce json
+// @Param id path int true "Payment ID"
+// @Param page query int false "Page number" default(1)
+// @Param per_page query int false "Items per page" default(10)
+// @Success 200 {object} utils.PaginatedResponse{data=[]PaymentItemAttachedSwagger}
+// @Failure 400 {object} utils.Response
+// @Failure 404 {object} utils.Response
+// @Router /payments/{id}/items/attached [get]
+// @Security BearerAuth
+func (ctrl *PaymentController) GetItemsAttached(c *fiber.Ctx) error {
+	paymentID, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Invalid payment ID")
+	}
+
+	_, err = ctrl.repo.FindByID(paymentID)
+	if err != nil {
+		return utils.ErrorResponse(c, fiber.StatusNotFound, "Payment not found")
+	}
+
+	page, _ := strconv.Atoi(c.Query("page", "1"))
+	perPage, _ := strconv.Atoi(c.Query("per_page", "10"))
+
+	if page < 1 {
+		page = 1
+	}
+
+	if perPage < 1 {
+		perPage = 10
+	} else if perPage > 100 {
+		perPage = 100
+	}
+
+	total, err := ctrl.paymentItemRepo.CountByPaymentID(uint(paymentID))
+	if err != nil {
+		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to count payment items")
+	}
+
+	paymentItems, err := ctrl.paymentItemRepo.FindByPaymentIDPaginated(uint(paymentID), page, perPage)
+	if err != nil {
+		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to retrieve payment items")
+	}
+
+	var response []dto.PaymentItemAttachedResponse
+	for _, pi := range paymentItems {
+		itemType := "Product"
+		if pi.Item != nil {
+			if pi.Item.TypeID == 2 {
+				itemType = "Service"
+			}
+			response = append(response, dto.PaymentItemAttachedResponse{
+				ID:             pi.Item.ID,
+				Name:           pi.Item.Name,
+				TypeID:         pi.Item.TypeID,
+				Type:           itemType,
+				Code:           pi.ItemCode,
+				Price:          pi.Price,
+				Quantity:       pi.Quantity,
+				Total:          pi.Total,
+				FormattedPrice: utils.FormatRupiah(pi.Price),
+				FormattedTotal: utils.FormatRupiah(pi.Total),
+				UpdatedAt:      pi.UpdatedAt,
+			})
+		}
+	}
+
+	return utils.PaginatedSuccessResponse(c, "Payment items retrieved successfully", response, page, perPage, total, len(response))
 }

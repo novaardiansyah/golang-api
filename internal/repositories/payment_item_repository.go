@@ -63,3 +63,36 @@ func (r *PaymentItemRepository) DeleteByPaymentID(tx *gorm.DB, paymentID uint) e
 	}
 	return r.db.Where("payment_id = ?", paymentID).Delete(&models.PaymentItem{}).Error
 }
+
+func (r *PaymentItemRepository) CountByPaymentID(paymentID uint) (int64, error) {
+	var count int64
+	err := r.db.Model(&models.PaymentItem{}).Where("payment_id = ?", paymentID).Count(&count).Error
+	return count, err
+}
+
+func (r *PaymentItemRepository) FindByPaymentIDPaginated(paymentID uint, page, limit int) ([]models.PaymentItem, error) {
+	var paymentItems []models.PaymentItem
+	offset := (page - 1) * limit
+	err := r.db.Where("payment_id = ?", paymentID).Preload("Item").Offset(offset).Limit(limit).Order("updated_at desc").Find(&paymentItems).Error
+	return paymentItems, err
+}
+
+func (r *PaymentItemRepository) GetSummaryByPaymentID(paymentID uint) (*PaymentItemSummary, error) {
+	var summary PaymentItemSummary
+	err := r.db.Model(&models.PaymentItem{}).
+		Select("payment_id, COUNT(*) as total_items, SUM(quantity) as total_qty, SUM(total) as total_amount").
+		Where("payment_id = ?", paymentID).
+		Group("payment_id").
+		Scan(&summary).Error
+	if err != nil {
+		return nil, err
+	}
+	return &summary, nil
+}
+
+type PaymentItemSummary struct {
+	PaymentID   uint  `gorm:"column:payment_id"`
+	TotalItems  int64 `gorm:"column:total_items"`
+	TotalQty    int64 `gorm:"column:total_qty"`
+	TotalAmount int64 `gorm:"column:total_amount"`
+}

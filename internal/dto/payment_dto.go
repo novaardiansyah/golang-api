@@ -32,3 +32,26 @@ type PaymentLogProperties struct {
 	PaymentAccountID   uint            `json:"payment_account_id"`
 	PaymentAccountToID *uint           `json:"payment_account_to_id"`
 }
+
+type PaymentItemSummaryResponse struct {
+	PaymentID       uint   `json:"payment_id"`
+	PaymentCode     string `json:"payment_code"`
+	TotalItems      int64  `json:"total_items"`
+	TotalQty        int64  `json:"total_qty"`
+	TotalAmount     int64  `json:"total_amount"`
+	FormattedAmount string `json:"formatted_amount"`
+}
+
+type PaymentItemAttachedResponse struct {
+	ID             uint      `json:"id"`
+	Name           string    `json:"name"`
+	TypeID         uint      `json:"type_id"`
+	Type           string    `json:"type"`
+	Code           string    `json:"code"`
+	Price          int64     `json:"price"`
+	Quantity       int       `json:"quantity"`
+	Total          int64     `json:"total"`
+	FormattedPrice string    `json:"formatted_price"`
+	FormattedTotal string    `json:"formatted_total"`
+	UpdatedAt      time.Time `json:"updated_at"`
+}

@@ -164,6 +164,46 @@ definitions:
       user_id:
         type: integer
     type: object
+  controllers.PaymentItemAttachedSwagger:
+    properties:
+      code:
+        type: string
+      formatted_price:
+        type: string
+      formatted_total:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      price:
+        type: integer
+      quantity:
+        type: integer
+      total:
+        type: integer
+      type:
+        type: string
+      type_id:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  controllers.PaymentItemSummarySwagger:
+    properties:
+      formatted_amount:
+        type: string
+      payment_code:
+        type: string
+      payment_id:
+        type: integer
+      total_amount:
+        type: integer
+      total_items:
+        type: integer
+      total_qty:
+        type: integer
+    type: object
   controllers.PaymentSwagger:
     properties:
       account:
@@ -1245,6 +1285,90 @@ paths:
       security:
       - BearerAuth: []
       summary: Get payment attachments
+      tags:
+      - payments
+  /payments/{id}/items/attached:
+    get:
+      consumes:
+      - application/json
+      description: Get paginated list of items attached to a specific payment
+      parameters:
+      - description: Payment ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: per_page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.PaginatedResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/controllers.PaymentItemAttachedSwagger'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Get attached items for a payment
+      tags:
+      - payments
+  /payments/{id}/items/summary:
+    get:
+      consumes:
+      - application/json
+      description: Get summary of items attached to a specific payment
+      parameters:
+      - description: Payment ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/controllers.PaymentItemSummarySwagger'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Get payment items summary
       tags:
       - payments
   /payments/summary:
