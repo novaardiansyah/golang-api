@@ -6,6 +6,7 @@ import (
 	"golang-api/internal/models"
 	"golang-api/internal/repositories"
 	"golang-api/pkg/utils"
+	"log"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -76,7 +77,8 @@ func (s *storeService) Store(c *fiber.Ctx) error {
 
 func (s *storeService) preparePayload(payload *dto.StorePaymentRequest) {
 	if payload.HasItems {
-		payload.Amount = nil
+		zero := int64(0)
+		payload.Amount = &zero
 		payload.Name = nil
 		payload.TypeID = 1
 	}
@@ -101,6 +103,7 @@ func (s *storeService) createPayment(tx *gorm.DB, userId uint, userName string, 
 	})
 
 	if err != nil {
+		log.Println("Failed to create payment: ", err)
 		return nil, errors.New("Failed to create payment, please try again")
 	}
 
