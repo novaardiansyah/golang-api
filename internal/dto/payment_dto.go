@@ -55,3 +55,10 @@ type PaymentItemAttachedResponse struct {
 	FormattedTotal string    `json:"formatted_total"`
 	UpdatedAt      time.Time `json:"updated_at"`
 }
+
+type PaymentItemSummary struct {
+	PaymentID   uint  `gorm:"column:payment_id" json:"payment_id"`
+	TotalItems  int64 `gorm:"column:total_items" json:"total_items"`
+	TotalQty    int64 `gorm:"column:total_qty" json:"total_qty"`
+	TotalAmount int64 `gorm:"column:total_amount" json:"total_amount"`
+}

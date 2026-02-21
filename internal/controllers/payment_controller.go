@@ -376,8 +376,9 @@ func (ctrl *PaymentController) Store(c *fiber.Ctx) error {
 // @Produce json
 // @Param id path int true "Payment ID"
 // @Success 200 {object} utils.Response{data=PaymentItemSummarySwagger}
-// @Failure 400 {object} utils.Response
-// @Failure 404 {object} utils.Response
+// @Failure 401 {object} utils.UnauthorizedResponse
+// @Failure 400 {object} utils.SimpleErrorResponse
+// @Failure 500 {object} utils.SimpleErrorResponse
 // @Router /payments/{id}/items/summary [get]
 // @Security BearerAuth
 func (ctrl *PaymentController) GetItemsSummary(c *fiber.Ctx) error {
@@ -397,7 +398,7 @@ func (ctrl *PaymentController) GetItemsSummary(c *fiber.Ctx) error {
 	}
 
 	if summary == nil {
-		summary = &repositories.PaymentItemSummary{
+		summary = &dto.PaymentItemSummary{
 			PaymentID:   uint(paymentID),
 			TotalItems:  0,
 			TotalQty:    0,
@@ -427,8 +428,9 @@ func (ctrl *PaymentController) GetItemsSummary(c *fiber.Ctx) error {
 // @Param page query int false "Page number" default(1)
 // @Param per_page query int false "Items per page" default(10)
 // @Success 200 {object} utils.PaginatedResponse{data=[]PaymentItemAttachedSwagger}
-// @Failure 400 {object} utils.Response
-// @Failure 404 {object} utils.Response
+// @Failure 401 {object} utils.UnauthorizedResponse
+// @Failure 400 {object} utils.SimpleErrorResponse
+// @Failure 500 {object} utils.SimpleErrorResponse
 // @Router /payments/{id}/items/attached [get]
 // @Security BearerAuth
 func (ctrl *PaymentController) GetItemsAttached(c *fiber.Ctx) error {

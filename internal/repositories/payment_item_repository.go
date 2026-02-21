@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"golang-api/internal/dto"
 	"golang-api/internal/models"
 
 	"gorm.io/gorm"
@@ -77,8 +78,8 @@ func (r *PaymentItemRepository) FindByPaymentIDPaginated(paymentID uint, page, l
 	return paymentItems, err
 }
 
-func (r *PaymentItemRepository) GetSummaryByPaymentID(paymentID uint) (*PaymentItemSummary, error) {
-	var summary PaymentItemSummary
+func (r *PaymentItemRepository) GetSummaryByPaymentID(paymentID uint) (*dto.PaymentItemSummary, error) {
+	var summary dto.PaymentItemSummary
 	err := r.db.Model(&models.PaymentItem{}).
 		Select("payment_id, COUNT(*) as total_items, SUM(quantity) as total_qty, SUM(total) as total_amount").
 		Where("payment_id = ?", paymentID).
@@ -88,11 +89,4 @@ func (r *PaymentItemRepository) GetSummaryByPaymentID(paymentID uint) (*PaymentI
 		return nil, err
 	}
 	return &summary, nil
-}
-
-type PaymentItemSummary struct {
-	PaymentID   uint  `gorm:"column:payment_id"`
-	TotalItems  int64 `gorm:"column:total_items"`
-	TotalQty    int64 `gorm:"column:total_qty"`
-	TotalAmount int64 `gorm:"column:total_amount"`
 }
