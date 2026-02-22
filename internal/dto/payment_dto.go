@@ -56,6 +56,18 @@ type PaymentItemAttachedResponse struct {
 	UpdatedAt      time.Time `json:"updated_at"`
 }
 
+type ItemNotAttachedResponse struct {
+	ID              uint      `json:"id"`
+	Name            string    `json:"name"`
+	TypeID          uint      `json:"type_id"`
+	Type            string    `json:"type"`
+	Code            string    `json:"code"`
+	Amount          int64     `json:"amount"`
+	FormattedAmount string    `json:"formatted_amount"`
+	CreatedAt       time.Time `json:"created_at"`
+	UpdatedAt       time.Time `json:"updated_at"`
+}
+
 type PaymentItemSummary struct {
 	PaymentID   uint  `gorm:"column:payment_id" json:"payment_id"`
 	TotalItems  int64 `gorm:"column:total_items" json:"total_items"`

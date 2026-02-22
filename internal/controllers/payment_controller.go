@@ -19,6 +19,7 @@ import (
 	"golang-api/internal/repositories"
 	"golang-api/internal/service/payment_service"
 	"golang-api/pkg/utils"
+	"log"
 	"math"
 	"path"
 	"strconv"
@@ -37,6 +38,7 @@ type PaymentController struct {
 	generate        *repositories.GenerateRepository
 	paymentAccount  *repositories.PaymentAccountRepository
 	paymentItemRepo *repositories.PaymentItemRepository
+	itemRepo        *repositories.ItemRepository
 	paymentService  payment_service.MainService
 	db              *gorm.DB
 }
@@ -46,6 +48,7 @@ func NewPaymentController(db *gorm.DB) *PaymentController {
 	generate := repositories.NewGenerateRepository(db)
 	paymentAccount := repositories.NewPaymentAccountRepository(db)
 	paymentItemRepo := repositories.NewPaymentItemRepository(db)
+	itemRepo := repositories.NewItemRepository(db)
 	paymentService := payment_service.NewMainService(db)
 
 	return &PaymentController{
@@ -53,6 +56,7 @@ func NewPaymentController(db *gorm.DB) *PaymentController {
 		generate:        generate,
 		paymentAccount:  paymentAccount,
 		paymentItemRepo: paymentItemRepo,
+		itemRepo:        itemRepo,
 		paymentService:  paymentService,
 		db:              db,
 	}
@@ -491,4 +495,77 @@ func (ctrl *PaymentController) GetItemsAttached(c *fiber.Ctx) error {
 	}
 
 	return utils.PaginatedSuccessResponse(c, "Payment items retrieved successfully", response, page, perPage, total, len(response))
+}
+
+// GetItemsNotAttached godoc
+// @Summary Get not attached items for a payment
+// @Description Get paginated list of items not attached to a specific payment
+// @Tags payments
+// @Accept json
+// @Produce json
+// @Param id path int true "Payment ID"
+// @Param page query int false "Page number" default(1)
+// @Param per_page query int false "Items per page" default(10)
+// @Success 200 {object} utils.PaginatedResponse{data=[]ItemNotAttachedSwagger}
+// @Failure 401 {object} utils.UnauthorizedResponse
+// @Failure 400 {object} utils.SimpleErrorResponse
+// @Failure 500 {object} utils.SimpleErrorResponse
+// @Router /payments/{id}/items/not-attached [get]
+// @Security BearerAuth
+func (ctrl *PaymentController) GetItemsNotAttached(c *fiber.Ctx) error {
+	paymentID, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Invalid payment ID")
+	}
+
+	_, err = ctrl.repo.FindByID(paymentID)
+	if err != nil {
+		return utils.ErrorResponse(c, fiber.StatusNotFound, "Payment not found")
+	}
+
+	page, _ := strconv.Atoi(c.Query("page", "1"))
+	perPage, _ := strconv.Atoi(c.Query("per_page", "10"))
+
+	if page < 1 {
+		page = 1
+	}
+
+	if perPage < 1 {
+		perPage = 10
+	} else if perPage > 100 {
+		perPage = 100
+	}
+
+	total, err := ctrl.itemRepo.CountNotAttachedByPaymentID(uint(paymentID))
+	if err != nil {
+		log.Println("Failed to count items", err)
+		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to count items")
+	}
+
+	items, err := ctrl.itemRepo.FindNotAttachedByPaymentID(uint(paymentID), page, perPage)
+	if err != nil {
+		log.Println("Failed to retrieve items", err)
+		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to retrieve items")
+	}
+
+	var response []dto.ItemNotAttachedResponse
+	for _, item := range items {
+		itemType := ""
+		if item.ItemType != nil {
+			itemType = item.ItemType.Name
+		}
+		response = append(response, dto.ItemNotAttachedResponse{
+			ID:              item.ID,
+			Name:            item.Name,
+			TypeID:          item.TypeID,
+			Type:            itemType,
+			Code:            item.Code,
+			Amount:          item.Amount,
+			FormattedAmount: utils.FormatRupiah(item.Amount),
+			CreatedAt:       item.CreatedAt,
+			UpdatedAt:       item.UpdatedAt,
+		})
+	}
+
+	return utils.PaginatedSuccessResponse(c, "Items retrieved successfully", response, page, perPage, total, len(response))
 }

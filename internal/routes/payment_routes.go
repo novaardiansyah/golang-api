@@ -21,4 +21,5 @@ func PaymentRoutes(api fiber.Router, db *gorm.DB) {
 	payments.Get("/:id", paymentController.Show)
 	payments.Get("/:id/items/summary", paymentController.GetItemsSummary)
 	payments.Get("/:id/items/attached", paymentController.GetItemsAttached)
+	payments.Get("/:id/items/not-attached", paymentController.GetItemsNotAttached)
 }
