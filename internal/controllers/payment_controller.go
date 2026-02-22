@@ -372,6 +372,21 @@ func (ctrl *PaymentController) Store(c *fiber.Ctx) error {
 	return ctrl.paymentService.Store(c)
 }
 
+// @Summary Generate payment report
+// @Description Generate a payment report (daily, monthly, or date range)
+// @Tags payments
+// @Accept json
+// @Produce json
+// @Param body body object true "Report parameters"
+// @Failure 401 {object} utils.UnauthorizedResponse
+// @Failure 422 {object} utils.ValidationErrorResponse
+// @Failure 500 {object} utils.SimpleErrorResponse
+// @Router /payments/generate-report [post]
+// @Security BearerAuth
+func (ctrl *PaymentController) GenerateReport(c *fiber.Ctx) error {
+	return ctrl.paymentService.GenerateReport(c)
+}
+
 // GetItemsSummary godoc
 // @Summary Get payment items summary
 // @Description Get summary of items attached to a specific payment

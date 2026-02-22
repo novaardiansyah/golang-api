@@ -17,6 +17,7 @@ func PaymentRoutes(api fiber.Router, db *gorm.DB) {
 	payments.Get("/summary", paymentController.Summary)
 
 	payments.Post("/", paymentController.Store)
+	payments.Post("/generate-report", paymentController.GenerateReport)
 
 	payments.Get("/:id", paymentController.Show)
 	payments.Get("/:id/items/summary", paymentController.GetItemsSummary)
