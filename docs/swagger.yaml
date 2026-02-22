@@ -102,6 +102,27 @@ definitions:
       target_date:
         type: string
     type: object
+  controllers.ItemNotAttachedSwagger:
+    properties:
+      amount:
+        type: integer
+      code:
+        type: string
+      created_at:
+        type: string
+      formatted_amount:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      type:
+        type: string
+      type_id:
+        type: integer
+      updated_at:
+        type: string
+    type: object
   controllers.OriginalAttachment:
     properties:
       formatted_size:
@@ -1337,6 +1358,58 @@ paths:
       security:
       - BearerAuth: []
       summary: Get attached items for a payment
+      tags:
+      - payments
+  /payments/{id}/items/not-attached:
+    get:
+      consumes:
+      - application/json
+      description: Get paginated list of items not attached to a specific payment
+      parameters:
+      - description: Payment ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: per_page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.PaginatedResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/controllers.ItemNotAttachedSwagger'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.SimpleErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.UnauthorizedResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.SimpleErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get not attached items for a payment
       tags:
       - payments
   /payments/{id}/items/summary:

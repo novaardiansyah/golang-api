@@ -169,3 +169,15 @@ type PaymentItemAttachedSwagger struct {
 	FormattedTotal string    `json:"formatted_total"`
 	UpdatedAt      time.Time `json:"updated_at"`
 }
+
+type ItemNotAttachedSwagger struct {
+	ID              uint      `json:"id"`
+	Name            string    `json:"name"`
+	TypeID          uint      `json:"type_id"`
+	Type            string    `json:"type"`
+	Code            string    `json:"code"`
+	Amount          int64     `json:"amount"`
+	FormattedAmount string    `json:"formatted_amount"`
+	CreatedAt       time.Time `json:"created_at"`
+	UpdatedAt       time.Time `json:"updated_at"`
+}
