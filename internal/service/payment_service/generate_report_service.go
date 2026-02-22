@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"golang-api/internal/config"
+	"golang-api/internal/dto"
 	"golang-api/pkg/utils"
 	"io"
 	"net/http"
@@ -25,65 +26,79 @@ func NewGenerateReportService() GenerateReportService {
 	return &generateReportService{}
 }
 
-type generateReportRequest struct {
-	ReportType string `json:"report_type"`
-	StartDate  string `json:"start_date"`
-	EndDate    string `json:"end_date"`
-	Periode    string `json:"periode"`
+func (s *generateReportService) GenerateReport(c *fiber.Ctx) error {
+	var payload dto.GenerateReportRequest
+
+	validateErrors := s.validate(c, &payload)
+	if validateErrors != nil {
+		return utils.ValidationError(c, validateErrors)
+	}
+
+	return s.forwardRequest(c, &payload)
 }
 
-func (s *generateReportService) GenerateReport(c *fiber.Ctx) error {
-	var payload generateReportRequest
-
+func (s *generateReportService) validate(c *fiber.Ctx, payload *dto.GenerateReportRequest) map[string][]string {
 	rules := govalidator.MapData{
 		"report_type": []string{"required", "in:daily,monthly,date_range"},
 	}
 
-	errs := utils.ValidateJSON(c, &payload, rules)
+	errs := utils.ValidateJSON(c, payload, rules)
 	if errs != nil {
-		return utils.ValidationError(c, errs)
+		return errs
 	}
 
 	validationErrs := make(map[string][]string)
 
 	if payload.ReportType == "date_range" {
-		dateRegex := regexp.MustCompile(`^\d{4}-\d{2}-\d{2}$`)
-
-		if payload.StartDate == "" {
-			validationErrs["start_date"] = []string{"The start date is required for custom date range report."}
-		} else if !dateRegex.MatchString(payload.StartDate) {
-			validationErrs["start_date"] = []string{"The start date must be in format Y-m-d."}
-		}
-
-		if payload.EndDate == "" {
-			validationErrs["end_date"] = []string{"The end date is required for custom date range report."}
-		} else if !dateRegex.MatchString(payload.EndDate) {
-			validationErrs["end_date"] = []string{"The end date must be in format Y-m-d."}
-		}
-
-		if len(validationErrs) == 0 {
-			start, _ := time.Parse("2006-01-02", payload.StartDate)
-			end, _ := time.Parse("2006-01-02", payload.EndDate)
-			if end.Before(start) {
-				validationErrs["end_date"] = []string{"The end date must be after or equal to start date."}
-			}
-		}
+		s.validateDateRange(payload, validationErrs)
 	}
 
 	if payload.ReportType == "monthly" {
-		monthRegex := regexp.MustCompile(`^\d{4}-\d{2}$`)
-
-		if payload.Periode == "" {
-			validationErrs["periode"] = []string{"The periode (month) is required for monthly report."}
-		} else if !monthRegex.MatchString(payload.Periode) {
-			validationErrs["periode"] = []string{"The periode must be in format Y-m."}
-		}
+		s.validateMonthly(payload, validationErrs)
 	}
 
 	if len(validationErrs) > 0 {
-		return utils.ValidationError(c, validationErrs)
+		return validationErrs
 	}
 
+	return nil
+}
+
+func (s *generateReportService) validateDateRange(payload *dto.GenerateReportRequest, errs map[string][]string) {
+	dateRegex := regexp.MustCompile(`^\d{4}-\d{2}-\d{2}$`)
+
+	if payload.StartDate == "" {
+		errs["start_date"] = []string{"The start date is required for custom date range report."}
+	} else if !dateRegex.MatchString(payload.StartDate) {
+		errs["start_date"] = []string{"The start date must be in format Y-m-d."}
+	}
+
+	if payload.EndDate == "" {
+		errs["end_date"] = []string{"The end date is required for custom date range report."}
+	} else if !dateRegex.MatchString(payload.EndDate) {
+		errs["end_date"] = []string{"The end date must be in format Y-m-d."}
+	}
+
+	if len(errs) == 0 {
+		start, _ := time.Parse("2006-01-02", payload.StartDate)
+		end, _ := time.Parse("2006-01-02", payload.EndDate)
+		if end.Before(start) {
+			errs["end_date"] = []string{"The end date must be after or equal to start date."}
+		}
+	}
+}
+
+func (s *generateReportService) validateMonthly(payload *dto.GenerateReportRequest, errs map[string][]string) {
+	monthRegex := regexp.MustCompile(`^\d{4}-\d{2}$`)
+
+	if payload.Periode == "" {
+		errs["periode"] = []string{"The periode (month) is required for monthly report."}
+	} else if !monthRegex.MatchString(payload.Periode) {
+		errs["periode"] = []string{"The periode must be in format Y-m."}
+	}
+}
+
+func (s *generateReportService) forwardRequest(c *fiber.Ctx, payload *dto.GenerateReportRequest) error {
 	mainURL := strings.TrimRight(config.MainUrl, "/")
 	targetURL := fmt.Sprintf("%s/api/payments/generate-report", mainURL)
 
