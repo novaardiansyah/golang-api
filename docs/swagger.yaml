@@ -410,6 +410,17 @@ definitions:
     - new_password
     - new_password_confirmation
     type: object
+  dto.GenerateReportRequest:
+    properties:
+      end_date:
+        type: string
+      periode:
+        type: string
+      report_type:
+        type: string
+      start_date:
+        type: string
+    type: object
   dto.LoginRequest:
     properties:
       email:
@@ -1454,6 +1465,46 @@ paths:
       security:
       - BearerAuth: []
       summary: Get payment items summary
+      tags:
+      - payments
+  /payments/generate-report:
+    post:
+      consumes:
+      - application/json
+      description: Generate a payment report (daily, monthly, or date range)
+      parameters:
+      - description: Report parameters
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.GenerateReportRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.SimpleResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.SimpleErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.UnauthorizedResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/utils.ValidationErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.SimpleErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Generate payment report
       tags:
       - payments
   /payments/summary:
