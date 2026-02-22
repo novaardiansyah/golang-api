@@ -74,3 +74,10 @@ type PaymentItemSummary struct {
 	TotalQty    int64 `gorm:"column:total_qty" json:"total_qty"`
 	TotalAmount int64 `gorm:"column:total_amount" json:"total_amount"`
 }
+
+type GenerateReportRequest struct {
+	ReportType string `json:"report_type"`
+	StartDate  string `json:"start_date"`
+	EndDate    string `json:"end_date"`
+	Periode    string `json:"periode"`
+}

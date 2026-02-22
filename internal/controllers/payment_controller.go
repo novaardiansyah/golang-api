@@ -377,7 +377,9 @@ func (ctrl *PaymentController) Store(c *fiber.Ctx) error {
 // @Tags payments
 // @Accept json
 // @Produce json
-// @Param body body object true "Report parameters"
+// @Param body body dto.GenerateReportRequest true "Report parameters"
+// @Success 200 {object} utils.SimpleResponse
+// @Failure 400 {object} utils.SimpleErrorResponse
 // @Failure 401 {object} utils.UnauthorizedResponse
 // @Failure 422 {object} utils.ValidationErrorResponse
 // @Failure 500 {object} utils.SimpleErrorResponse
