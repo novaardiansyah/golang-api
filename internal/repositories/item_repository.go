@@ -63,17 +63,35 @@ func (r *ItemRepository) Delete(id uint) error {
 	return r.db.Delete(&models.Item{}, id).Error
 }
 
-func (r *ItemRepository) FindNotAttachedByPaymentID(paymentID uint, page, limit int) ([]models.Item, error) {
+func (r *ItemRepository) FindNotAttachedByPaymentID(paymentID uint, page, limit int, search string) ([]models.Item, error) {
 	var items []models.Item
 	offset := (page - 1) * limit
 	subQuery := r.db.Table("payment_item").Select("item_id").Where("payment_id = ?", paymentID)
-	err := r.db.Preload("ItemType").Where("id NOT IN (?)", subQuery).Offset(offset).Limit(limit).Order("updated_at desc").Find(&items).Error
+	query := r.db.Preload("ItemType").Where("id NOT IN (?)", subQuery)
+	if search != "" {
+		likeStart := search + "%"
+		likeWord := "% " + search + "%"
+		query = query.Where(
+			"(name LIKE ? OR name LIKE ? OR code LIKE ?)",
+			likeStart, likeWord, likeStart,
+		)
+	}
+	err := query.Offset(offset).Limit(limit).Order("updated_at desc").Find(&items).Error
 	return items, err
 }
 
-func (r *ItemRepository) CountNotAttachedByPaymentID(paymentID uint) (int64, error) {
+func (r *ItemRepository) CountNotAttachedByPaymentID(paymentID uint, search string) (int64, error) {
 	var count int64
 	subQuery := r.db.Table("payment_item").Select("item_id").Where("payment_id = ?", paymentID)
-	err := r.db.Model(&models.Item{}).Where("id NOT IN (?)", subQuery).Count(&count).Error
+	query := r.db.Model(&models.Item{}).Where("id NOT IN (?)", subQuery)
+	if search != "" {
+		likeStart := search + "%"
+		likeWord := "% " + search + "%"
+		query = query.Where(
+			"(name LIKE ? OR name LIKE ? OR code LIKE ?)",
+			likeStart, likeWord, likeStart,
+		)
+	}
+	err := query.Count(&count).Error
 	return count, err
 }

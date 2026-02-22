@@ -506,6 +506,7 @@ func (ctrl *PaymentController) GetItemsAttached(c *fiber.Ctx) error {
 // @Param id path int true "Payment ID"
 // @Param page query int false "Page number" default(1)
 // @Param per_page query int false "Items per page" default(10)
+// @Param search query string false "Search by name or code"
 // @Success 200 {object} utils.PaginatedResponse{data=[]ItemNotAttachedSwagger}
 // @Failure 401 {object} utils.UnauthorizedResponse
 // @Failure 400 {object} utils.SimpleErrorResponse
@@ -525,6 +526,7 @@ func (ctrl *PaymentController) GetItemsNotAttached(c *fiber.Ctx) error {
 
 	page, _ := strconv.Atoi(c.Query("page", "1"))
 	perPage, _ := strconv.Atoi(c.Query("per_page", "10"))
+	search := c.Query("search", "")
 
 	if page < 1 {
 		page = 1
@@ -536,13 +538,13 @@ func (ctrl *PaymentController) GetItemsNotAttached(c *fiber.Ctx) error {
 		perPage = 100
 	}
 
-	total, err := ctrl.itemRepo.CountNotAttachedByPaymentID(uint(paymentID))
+	total, err := ctrl.itemRepo.CountNotAttachedByPaymentID(uint(paymentID), search)
 	if err != nil {
 		log.Println("Failed to count items", err)
 		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to count items")
 	}
 
-	items, err := ctrl.itemRepo.FindNotAttachedByPaymentID(uint(paymentID), page, perPage)
+	items, err := ctrl.itemRepo.FindNotAttachedByPaymentID(uint(paymentID), page, perPage, search)
 	if err != nil {
 		log.Println("Failed to retrieve items", err)
 		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Failed to retrieve items")
