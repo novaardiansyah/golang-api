@@ -1,13 +1,17 @@
 package auth_service
 
 import (
-	"encoding/json"
 	"fmt"
+	"golang-api/internal/config"
 	"golang-api/internal/dto"
 	"golang-api/internal/models"
 	"golang-api/internal/repositories"
 	"golang-api/internal/service"
 	"golang-api/pkg/utils"
+	"io"
+	"net/http"
+	"strings"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/thedevsaddam/govalidator"
@@ -38,7 +42,7 @@ func (s *loginService) Login(c *fiber.Ctx) error {
 		return utils.ValidationError(c, errs)
 	}
 
-	user, token, err := s.authenticate(data["email"].(string), data["password"].(string))
+	_, token, err := s.authenticate(data["email"].(string), data["password"].(string))
 	if err != nil {
 		if err.Error() == "invalid_credentials" {
 			return utils.ErrorResponse(c, fiber.StatusUnauthorized, "Invalid credentials")
@@ -46,7 +50,7 @@ func (s *loginService) Login(c *fiber.Ctx) error {
 		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to create token")
 	}
 
-	s.createActivityLog(c, user)
+	s.sendNotification(token)
 
 	return utils.SuccessResponse(c, "Login successful", dto.LoginResponse{
 		Token: token,
@@ -73,27 +77,26 @@ func (s *loginService) authenticate(email, password string) (*models.User, strin
 	return s.authService.Login(email, password)
 }
 
-func (s *loginService) createActivityLog(c *fiber.Ctx, user *models.User) {
-	properties, _ := json.Marshal(map[string]interface{}{
-		"id":    user.ID,
-		"name":  user.Name,
-		"email": user.Email,
-	})
+func (s *loginService) sendNotification(token string) {
+	mainURL := strings.TrimRight(config.MainUrl, "/")
+	targetURL := fmt.Sprintf("%s/api/auth/login/notification", mainURL)
 
-	activityLog := models.ActivityLog{
-		LogName:        "Resource",
-		Description:    fmt.Sprintf("User %s has successfully authenticated via the API service", user.Name),
-		SubjectID:      &user.ID,
-		SubjectType:    utils.String("App\\Models\\User"),
-		Event:          "Login",
-		CauserID:       user.ID,
-		CauserType:     "App\\Models\\User",
-		PrevProperties: utils.RawMessage(json.RawMessage("[]")),
-		Properties:     properties,
-		IPAddress:      utils.String(c.IP()),
-		UserAgent:      utils.String(string(c.Request().Header.UserAgent())),
-		Referer:        utils.String(c.Get("Referer")),
+	req, err := http.NewRequest("POST", targetURL, nil)
+
+	if err != nil {
+		return
 	}
 
-	s.activityLogRepo.Store(&activityLog)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	client := &http.Client{Timeout: 30 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+
+	io.ReadAll(resp.Body)
 }
