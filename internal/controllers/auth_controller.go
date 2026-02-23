@@ -13,12 +13,11 @@
 package controllers
 
 import (
-	"encoding/json"
-	"fmt"
 	"golang-api/internal/dto"
 	"golang-api/internal/models"
 	"golang-api/internal/repositories"
 	"golang-api/internal/service"
+	"golang-api/internal/service/auth_service"
 	"golang-api/pkg/utils"
 
 	"github.com/gofiber/fiber/v2"
@@ -31,6 +30,7 @@ type AuthController struct {
 	TokenRepo       *repositories.PersonalAccessTokenRepository
 	ActivityLogRepo *repositories.ActivityLogRepository
 	AuthService     service.AuthService
+	AuthMainService auth_service.MainService
 }
 
 func NewAuthController(db *gorm.DB) *AuthController {
@@ -39,6 +39,7 @@ func NewAuthController(db *gorm.DB) *AuthController {
 		UserRepo:        repositories.NewUserRepository(db),
 		ActivityLogRepo: repositories.NewActivityLogRepository(db),
 		AuthService:     service.NewAuthService(db),
+		AuthMainService: auth_service.NewMainService(db),
 	}
 }
 
@@ -54,56 +55,7 @@ func NewAuthController(db *gorm.DB) *AuthController {
 // @Failure 422 {object} utils.ValidationErrorResponse
 // @Router /auth/login [post]
 func (ctrl *AuthController) Login(c *fiber.Ctx) error {
-	data := make(map[string]interface{})
-
-	rules := govalidator.MapData{
-		"email":    []string{"required", "email"},
-		"password": []string{"required", "min:6"},
-	}
-
-	errs := utils.ValidateJSON(c, &data, rules)
-	if errs != nil {
-		return utils.ValidationError(c, errs)
-	}
-
-	user, token, err := ctrl.AuthService.Login(
-		data["email"].(string),
-		data["password"].(string),
-	)
-
-	if err != nil {
-		if err.Error() == "invalid_credentials" {
-			return utils.ErrorResponse(c, fiber.StatusUnauthorized, "Invalid credentials")
-		}
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to create token")
-	}
-
-	properties, _ := json.Marshal(map[string]interface{}{
-		"id":    user.ID,
-		"name":  user.Name,
-		"email": user.Email,
-	})
-
-	activityLog := models.ActivityLog{
-		LogName:        "Resource",
-		Description:    fmt.Sprintf("User %s has successfully authenticated via the API service", user.Name),
-		SubjectID:      &user.ID,
-		SubjectType:    utils.String("App\\Models\\User"),
-		Event:          "Login",
-		CauserID:       user.ID,
-		CauserType:     "App\\Models\\User",
-		PrevProperties: utils.RawMessage(json.RawMessage("[]")),
-		Properties:     properties,
-		IPAddress:      utils.String(c.IP()),
-		UserAgent:      utils.String(string(c.Request().Header.UserAgent())),
-		Referer:        utils.String(c.Get("Referer")),
-	}
-
-	ctrl.ActivityLogRepo.Store(&activityLog)
-
-	return utils.SuccessResponse(c, "Login successful", dto.LoginResponse{
-		Token: token,
-	})
+	return ctrl.AuthMainService.Login(c)
 }
 
 // Logout godoc
