@@ -81,3 +81,15 @@ type GenerateReportRequest struct {
 	EndDate    string `json:"end_date"`
 	Periode    string `json:"periode"`
 }
+
+type AttachMultipleItemsItem struct {
+	Name   string `json:"name"`
+	Amount int64  `json:"amount"`
+	Qty    int    `json:"qty"`
+	ItemID *uint  `json:"item_id"`
+}
+
+type AttachMultipleItemsRequest struct {
+	Items       []AttachMultipleItemsItem `json:"items"`
+	TotalAmount int64                     `json:"totalAmount"`
+}

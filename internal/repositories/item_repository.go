@@ -42,6 +42,15 @@ func (r *ItemRepository) FindByID(id uint) (*models.Item, error) {
 	return &item, nil
 }
 
+func (r *ItemRepository) FindByName(name string) (*models.Item, error) {
+	var item models.Item
+	err := r.db.Where("name = ?", name).First(&item).Error
+	if err != nil {
+		return nil, err
+	}
+	return &item, nil
+}
+
 func (r *ItemRepository) FindByCode(code string) (*models.Item, error) {
 	var item models.Item
 	err := r.db.Where("code = ?", code).First(&item).Error
@@ -52,6 +61,13 @@ func (r *ItemRepository) FindByCode(code string) (*models.Item, error) {
 }
 
 func (r *ItemRepository) Create(item *models.Item) error {
+	return r.db.Create(item).Error
+}
+
+func (r *ItemRepository) CreateWithTx(tx *gorm.DB, item *models.Item) error {
+	if tx != nil {
+		return tx.Create(item).Error
+	}
 	return r.db.Create(item).Error
 }
 

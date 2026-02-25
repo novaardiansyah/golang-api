@@ -8,17 +8,20 @@ import (
 type MainService interface {
 	Store(c *fiber.Ctx) error
 	GenerateReport(c *fiber.Ctx) error
+	AttachMultipleItems(c *fiber.Ctx) error
 }
 
 type mainService struct {
 	storeService          StoreService
 	generateReportService GenerateReportService
+	attachItemsService    AttachItemsService
 }
 
 func NewMainService(db *gorm.DB) MainService {
 	return &mainService{
 		storeService:          NewStoreService(db),
 		generateReportService: NewGenerateReportService(),
+		attachItemsService:    NewAttachItemsService(db),
 	}
 }
 
@@ -28,4 +31,8 @@ func (s *mainService) Store(c *fiber.Ctx) error {
 
 func (s *mainService) GenerateReport(c *fiber.Ctx) error {
 	return s.generateReportService.GenerateReport(c)
+}
+
+func (s *mainService) AttachMultipleItems(c *fiber.Ctx) error {
+	return s.attachItemsService.AttachMultipleItems(c)
 }

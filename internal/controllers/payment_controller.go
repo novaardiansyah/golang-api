@@ -588,3 +588,7 @@ func (ctrl *PaymentController) GetItemsNotAttached(c *fiber.Ctx) error {
 
 	return utils.PaginatedSuccessResponse(c, "Items retrieved successfully", response, page, perPage, total, len(response))
 }
+
+func (ctrl *PaymentController) AttachMultipleItems(c *fiber.Ctx) error {
+	return ctrl.paymentService.AttachMultipleItems(c)
+}

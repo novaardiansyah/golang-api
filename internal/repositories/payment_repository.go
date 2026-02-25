@@ -171,3 +171,14 @@ func (r *PaymentRepository) afterCreate(userId uint, userName string, payment *m
 }
 
 // ! End Create
+
+func (r *PaymentRepository) UpdateAmountAndName(tx *gorm.DB, paymentID uint, amount int64, name string) error {
+	db := r.db
+	if tx != nil {
+		db = tx
+	}
+	return db.Model(&models.Payment{}).Where("id = ?", paymentID).Updates(map[string]interface{}{
+		"amount": amount,
+		"name":   name,
+	}).Error
+}
