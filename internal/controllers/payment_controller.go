@@ -589,6 +589,21 @@ func (ctrl *PaymentController) GetItemsNotAttached(c *fiber.Ctx) error {
 	return utils.PaginatedSuccessResponse(c, "Items retrieved successfully", response, page, perPage, total, len(response))
 }
 
+// AttachMultipleItems godoc
+// @Summary Attach multiple items to a payment
+// @Description Attach multiple items to a specific payment and update payment amount and name
+// @Tags payments
+// @Accept json
+// @Produce json
+// @Param id path int true "Payment ID"
+// @Param body body dto.AttachMultipleItemsRequest true "Items to attach"
+// @Success 200 {object} utils.SimpleResponse
+// @Failure 401 {object} utils.UnauthorizedResponse
+// @Failure 400 {object} utils.SimpleErrorResponse
+// @Failure 422 {object} utils.ValidationErrorResponse
+// @Failure 500 {object} utils.SimpleErrorResponse
+// @Router /payments/{id}/items/attach-multiple [post]
+// @Security BearerAuth
 func (ctrl *PaymentController) AttachMultipleItems(c *fiber.Ctx) error {
 	return ctrl.paymentService.AttachMultipleItems(c)
 }

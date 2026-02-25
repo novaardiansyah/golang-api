@@ -109,7 +109,7 @@ func (s *attachItemsService) AttachMultipleItems(c *fiber.Ctx) error {
 		return utils.ErrorResponse(c, fiber.StatusBadRequest, err.Error())
 	}
 
-	return utils.SuccessResponse(c, "Items attached successfully", nil)
+	return utils.SimpleSuccessResponse(c, "Items attached successfully")
 }
 
 func (s *attachItemsService) validate(payload dto.AttachMultipleItemsRequest) map[string][]string {
