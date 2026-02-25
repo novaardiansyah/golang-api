@@ -172,13 +172,94 @@ func (r *PaymentRepository) afterCreate(userId uint, userName string, payment *m
 
 // ! End Create
 
-func (r *PaymentRepository) UpdateAmountAndName(tx *gorm.DB, paymentID uint, amount int64, name string) error {
+// ! UpdateFields
+func (r *PaymentRepository) UpdateFields(tx *gorm.DB, paymentID uint, userId uint, userName string, fields map[string]interface{}) error {
 	db := r.db
 	if tx != nil {
 		db = tx
 	}
-	return db.Model(&models.Payment{}).Where("id = ?", paymentID).Updates(map[string]interface{}{
-		"amount": amount,
-		"name":   name,
-	}).Error
+
+	before, _ := r.beforeUpdateFields(db, paymentID)
+
+	if err := db.Model(&models.Payment{}).Where("id = ?", paymentID).Updates(fields).Error; err != nil {
+		return err
+	}
+
+	r.afterUpdateFields(db, userId, userName, before)
+
+	return nil
 }
+
+func (r *PaymentRepository) beforeUpdateFields(db *gorm.DB, paymentID uint) (*models.Payment, error) {
+	var payment models.Payment
+	err := db.First(&payment, paymentID).Error
+	if err != nil {
+		log.Println("Payment beforeUpdateFields error: ", err)
+		return nil, err
+	}
+	return &payment, nil
+}
+
+func (r *PaymentRepository) afterUpdateFields(db *gorm.DB, userId uint, userName string, prevPayment *models.Payment) error {
+	var payment models.Payment
+	err := db.First(&payment, prevPayment.ID).Error
+	if err != nil {
+		log.Println("Payment afterUpdateFields error: ", err)
+		return err
+	}
+
+	prevProps := dto.PaymentLogProperties{
+		ID:                 prevPayment.ID,
+		UserID:             prevPayment.UserID,
+		Code:               prevPayment.Code,
+		Name:               prevPayment.Name,
+		Date:               prevPayment.Date,
+		Amount:             prevPayment.Amount,
+		HasItems:           prevPayment.HasItems,
+		IsScheduled:        prevPayment.IsScheduled,
+		IsDraft:            prevPayment.IsDraft,
+		Attachments:        prevPayment.Attachments,
+		TypeID:             prevPayment.TypeID,
+		PaymentAccountID:   prevPayment.PaymentAccountID,
+		PaymentAccountToID: prevPayment.PaymentAccountToID,
+	}
+
+	newProps := dto.PaymentLogProperties{
+		ID:                 payment.ID,
+		UserID:             payment.UserID,
+		Code:               payment.Code,
+		Name:               payment.Name,
+		Date:               payment.Date,
+		Amount:             payment.Amount,
+		HasItems:           payment.HasItems,
+		IsScheduled:        payment.IsScheduled,
+		IsDraft:            payment.IsDraft,
+		Attachments:        payment.Attachments,
+		TypeID:             payment.TypeID,
+		PaymentAccountID:   payment.PaymentAccountID,
+		PaymentAccountToID: payment.PaymentAccountToID,
+	}
+
+	properties, _ := json.Marshal(newProps)
+	prevProperties, _ := json.Marshal(prevProps)
+
+	err = r.activityLogRepository.Store(&models.ActivityLog{
+		Event:          "Updated",
+		LogName:        "Resource",
+		Description:    "Payment Updated by " + userName,
+		SubjectType:    utils.String("App\\Models\\Payment"),
+		SubjectID:      &payment.ID,
+		CauserType:     "App\\Models\\User",
+		CauserID:       userId,
+		PrevProperties: (*json.RawMessage)(&prevProperties),
+		Properties:     properties,
+	})
+
+	if err != nil {
+		log.Println("Payment afterUpdateFields: failed to save activity log", err)
+	}
+
+	return err
+}
+
+// ! End UpdateFields

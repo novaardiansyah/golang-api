@@ -40,6 +40,7 @@ func NewAttachItemsService(db *gorm.DB) AttachItemsService {
 }
 
 func (s *attachItemsService) AttachMultipleItems(c *fiber.Ctx) error {
+	userName := c.Locals("user_name").(string)
 	paymentID, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
 		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Invalid payment ID")
@@ -54,7 +55,7 @@ func (s *attachItemsService) AttachMultipleItems(c *fiber.Ctx) error {
 		return utils.ErrorResponse(c, fiber.StatusBadRequest, "This payment does not support items")
 	}
 
-	if payment.PaymentType == nil || strings.ToLower(payment.PaymentType.Name) != "pengeluaran" {
+	if payment.TypeID != models.PaymentTypeExpense {
 		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Only expense payments can have items attached")
 	}
 
@@ -94,11 +95,14 @@ func (s *attachItemsService) AttachMultipleItems(c *fiber.Ctx) error {
 		}
 		note := strings.Trim(existingName+", "+strings.Join(itemNotes, ", "), ", ")
 
-		if txErr = s.payment.UpdateAmountAndName(tx, uint(paymentID), newAmount, note); txErr != nil {
+		if txErr = s.payment.UpdateFields(tx, uint(paymentID), payment.UserID, userName, map[string]interface{}{
+			"amount": newAmount,
+			"name":   note,
+		}); txErr != nil {
 			return errors.New("Failed to update payment")
 		}
 
-		return s.updateDeposit(tx, payment, oldAmount, newAmount)
+		return s.updateDeposit(tx, payment, oldAmount, newAmount, userName)
 	})
 
 	if err != nil {
@@ -176,7 +180,7 @@ func (s *attachItemsService) resolveAndCreateItems(tx *gorm.DB, paymentID uint, 
 	return paymentItems, itemNotes, nil
 }
 
-func (s *attachItemsService) updateDeposit(tx *gorm.DB, payment *models.Payment, oldAmount int64, newAmount int64) error {
+func (s *attachItemsService) updateDeposit(tx *gorm.DB, payment *models.Payment, oldAmount int64, newAmount int64, userName string) error {
 	paymentAccount, err := s.paymentAccount.SelectByID(tx, payment.PaymentAccountID, []string{"id", "user_id", "name", "deposit"})
 	if err != nil {
 		return errors.New("Payment account not found")
@@ -186,7 +190,7 @@ func (s *attachItemsService) updateDeposit(tx *gorm.DB, payment *models.Payment,
 	deposit += oldAmount
 	deposit -= newAmount
 
-	_, err = s.paymentAccount.Update(tx, payment.UserID, "System", &models.PaymentAccount{
+	_, err = s.paymentAccount.Update(tx, payment.UserID, userName, &models.PaymentAccount{
 		ID:      payment.PaymentAccountID,
 		Deposit: deposit,
 	}, paymentAccount)
